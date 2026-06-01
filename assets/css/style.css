@@ -1,0 +1,25 @@
+body {
+    padding-bottom: 70px; /* Space for bottom menu */
+}
+
+.bottom-menu {
+    height: 60px;
+    z-index: 1030;
+}
+
+.bottom-menu i {
+    font-size: 1.2rem;
+}
+
+.card {
+    border-radius: 15px;
+    border: none;
+}
+
+.btn-primary {
+    border-radius: 10px;
+}
+
+.navbar {
+    border-radius: 0 0 20px 20px;
+}
