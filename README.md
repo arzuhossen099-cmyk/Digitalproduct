@@ -4,7 +4,8 @@ A complete PHP-based web application for telecom services and rewards, optimized
 
 ## Features
 - **User System:** Registration, Login, Profile, Referral.
-- **Wallet:** Deposit (bKash, Nagad, Rocket), Withdraw (bKash, Nagad), Transaction History.
+- **Wallet:** Automatic & Manual Deposit (bKash, Nagad, Rocket), Withdraw (bKash, Nagad), Transaction History.
+- **SMS Automation:** Integrated Webhook for Android 'SMS Forwarder' apps to automate personal bKash/Nagad deposits.
 - **Plan System:** Users must activate a plan (min 100 BDT) to access premium features.
 - **Telecom Services:** Mobile Recharge, Internet/SMS/Talktime packages.
 - **Rewards:** Daily Check-in, Ad-watching rewards.

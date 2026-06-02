@@ -16,10 +16,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Transaction ID is required.";
     } else {
         try {
-            $stmt = $pdo->prepare("INSERT INTO deposits (user_id, amount, method, transaction_id) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$_SESSION['user_id'], $amount, $method, $transaction_id]);
-            $success = "Deposit request submitted successfully! It will be approved soon.";
+            $pdo->beginTransaction();
+
+            // Check for matching SMS record for auto-approval
+            $transaction_id = strtoupper($transaction_id);
+            $stmt = $pdo->prepare("SELECT * FROM sms_logs WHERE parsed_trx_id = ? AND parsed_amount = ? AND status = 'unmatched'");
+            $stmt->execute([$transaction_id, $amount]);
+            $sms_match = $stmt->fetch();
+
+            if ($sms_match) {
+                // Auto-approve
+                $stmt = $pdo->prepare("INSERT INTO deposits (user_id, amount, method, transaction_id, status) VALUES (?, ?, ?, ?, 'approved')");
+                $stmt->execute([$_SESSION['user_id'], $amount, $method, $transaction_id]);
+
+                $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+                $stmt->execute([$amount, $_SESSION['user_id']]);
+
+                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'deposit', ?, ?)");
+                $stmt->execute([$_SESSION['user_id'], $amount, "Auto-Deposit (SMS Match): " . $transaction_id]);
+
+                $stmt = $pdo->prepare("UPDATE sms_logs SET status = 'matched' WHERE id = ?");
+                $stmt->execute([$sms_match['id']]);
+
+                $stmt = $pdo->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
+                $stmt->execute([$_SESSION['user_id'], "Success! Your deposit of ৳$amount has been automatically approved."]);
+
+                $success = "Deposit automatically approved and balance updated!";
+                $user['balance'] += $amount;
+            } else {
+                // Submit for manual approval
+                $stmt = $pdo->prepare("INSERT INTO deposits (user_id, amount, method, transaction_id) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$_SESSION['user_id'], $amount, $method, $transaction_id]);
+                $success = "Deposit request submitted successfully! It will be approved soon.";
+            }
+
+            $pdo->commit();
         } catch (PDOException $e) {
+            $pdo->rollBack();
             if ($e->getCode() == 23000) {
                 $error = "Transaction ID already used.";
             } else {

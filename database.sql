@@ -139,6 +139,18 @@ CREATE TABLE IF NOT EXISTS package_orders (
     FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS sms_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender VARCHAR(20),
+    body TEXT,
+    parsed_method VARCHAR(20),
+    parsed_trx_id VARCHAR(50) UNIQUE,
+    parsed_amount DECIMAL(10, 2),
+    parsed_sender VARCHAR(20),
+    status ENUM('unmatched', 'matched') DEFAULT 'unmatched',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Insert initial data
 INSERT INTO plans (name, price, duration_days, description) VALUES ('Basic Plan', 100.00, 30, 'Basic plan to access all features for 30 days.');
 
@@ -150,7 +162,8 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 ('gateway_store_id', 'example_store_id'),
 ('gateway_store_password', 'example_store_pass'),
 ('gateway_mode', 'sandbox'), -- sandbox or live
-('auto_deposit_status', 'enabled'); -- enabled or disabled
+('auto_deposit_status', 'enabled'), -- enabled or disabled
+('sms_webhook_token', 'SECRET_WEBHOOK_123');
 
 -- Insert initial admin user (Password: admin123)
 INSERT INTO users (username, password, email, phone, is_admin, referral_code) VALUES
