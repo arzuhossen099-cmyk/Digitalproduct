@@ -1,6 +1,12 @@
 <?php
 require_once 'header.php';
 
+if (isset($_POST['distribute_lb'])) {
+    require_once '../includes/reward_distributor.php';
+    $msg = distributeLeaderboardRewards($pdo);
+    echo "<div class='alert alert-info'>$msg</div>";
+}
+
 $total_withdrawals = $pdo->query("SELECT SUM(amount) FROM withdrawals WHERE status = 'approved'")->fetchColumn() ?? 0;
 $total_earning_tasks = $pdo->query("SELECT SUM(amount) FROM reward_logs")->fetchColumn() ?? 0;
 $active_users_today = $pdo->query("SELECT COUNT(DISTINCT id) FROM users WHERE status = 'active'")->fetchColumn(); // Simplified
@@ -87,6 +93,9 @@ $active_users_today = $pdo->query("SELECT COUNT(DISTINCT id) FROM users WHERE st
                         <span class="badge bg-primary rounded-pill"><?php echo $pending_orders_count; ?></span>
                     </li>
                 </ul>
+                <form method="POST" class="mt-3">
+                    <button type="submit" name="distribute_lb" class="btn btn-sm btn-outline-warning w-100">Distribute Leaderboard Rewards</button>
+                </form>
             </div>
         </div>
     </div>

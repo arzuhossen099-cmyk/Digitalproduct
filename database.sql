@@ -107,6 +107,37 @@ CREATE TABLE IF NOT EXISTS daily_leaderboard (
 -- Update deposits table for fintech logic
 ALTER TABLE deposits ADD COLUMN sender_number VARCHAR(20) AFTER amount;
 
+-- Aviator Game System
+CREATE TABLE IF NOT EXISTS aviator_settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+    setting_value TEXT,
+    description TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS aviator_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    bet_amount DECIMAL(10, 2) NOT NULL,
+    multiplier DECIMAL(10, 2) DEFAULT 0.00,
+    win_amount DECIMAL(10, 2) DEFAULT 0.00,
+    crash_point DECIMAL(10, 2) NOT NULL,
+    result ENUM('win', 'loss') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+INSERT INTO aviator_settings (setting_key, setting_value, description) VALUES
+('game_status', 'active', 'Game ON/OFF'),
+('min_bet', '10', 'Minimum bet amount'),
+('max_bet', '1000', 'Maximum bet amount'),
+('default_bet', '10', 'Default bet amount shown'),
+('min_crash', '1.10', 'Minimum crash multiplier'),
+('max_crash', '15.00', 'Maximum crash multiplier'),
+('house_edge', '5', 'House edge percentage'),
+('game_title', 'Aviator', 'Game Display Title');
+
 CREATE TABLE IF NOT EXISTS reward_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,

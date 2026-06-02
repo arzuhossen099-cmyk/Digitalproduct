@@ -42,6 +42,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['plan_id'])) {
             $stmt = $pdo->prepare("INSERT INTO user_plans (user_id, plan_id, status, expires_at) VALUES (?, ?, 'active', ?)");
             $stmt->execute([$_SESSION['user_id'], $plan_id, $expires_at]);
 
+            // Referral Commission Logic (2-Tier)
+            if ($user['referred_by']) {
+                // Level 1 Commission (10%)
+                $l1_amount = $plan['price'] * 0.10;
+                $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+                $stmt->execute([$l1_amount, $user['referred_by']]);
+                $stmt = $pdo->prepare("INSERT INTO referral_commissions (referrer_id, referee_id, level, amount, description) VALUES (?, ?, 1, ?, ?)");
+                $stmt->execute([$user['referred_by'], $_SESSION['user_id'], $l1_amount, "Level 1 Commission from " . $user['username']]);
+
+                // Level 2 Commission (5%)
+                $stmt = $pdo->prepare("SELECT referred_by FROM users WHERE id = ?");
+                $stmt->execute([$user['referred_by']]);
+                $l2_referrer_id = $stmt->fetchColumn();
+
+                if ($l2_referrer_id) {
+                    $l2_amount = $plan['price'] * 0.05;
+                    $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+                    $stmt->execute([$l2_amount, $l2_referrer_id]);
+                    $stmt = $pdo->prepare("INSERT INTO referral_commissions (referrer_id, referee_id, level, amount, description) VALUES (?, ?, 2, ?, ?)");
+                    $stmt->execute([$l2_referrer_id, $_SESSION['user_id'], $l2_amount, "Level 2 Commission from " . $user['username']]);
+                }
+            }
+
             $pdo->commit();
             $success = "Plan activated successfully! You can now access all features.";
             // Update local user variable for UI
