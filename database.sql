@@ -116,3 +116,7 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 ('bkash_number', '01700000000'),
 ('nagad_number', '01800000000'),
 ('rocket_number', '01900000000');
+
+-- Insert initial admin user (Password: admin123)
+INSERT INTO users (username, password, email, phone, is_admin, referral_code) VALUES
+('admin', '$2y$10$uOU0kW0BTl217wCYoZPGzORX26wGddOG8/rBtzcR42Sy2G8zwAyPm', 'admin@example.com', '01700000000', 1, 'ADMINREF');
