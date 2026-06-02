@@ -5,43 +5,6 @@ require_once 'includes/auth_check.php';
 $error = '';
 $success = '';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['package_id'])) {
-    $package_id = intval($_POST['package_id']);
-
-    $stmt = $pdo->prepare("SELECT * FROM packages WHERE id = ?");
-    $stmt->execute([$package_id]);
-    $package = $stmt->fetch();
-
-    if (!$package) {
-        $error = "Invalid package selected.";
-    } elseif ($user['balance'] < $package['price']) {
-        $error = "Insufficient balance.";
-    } else {
-        try {
-            $pdo->beginTransaction();
-
-            // Deduct balance
-            $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
-            $stmt->execute([$package['price'], $_SESSION['user_id']]);
-
-            // Record transaction
-            $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'package_purchase', ?, ?)");
-            $stmt->execute([$_SESSION['user_id'], $package['price'], "Purchased package: " . $package['name']]);
-
-            // Send notification
-            $stmt = $pdo->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
-            $stmt->execute([$_SESSION['user_id'], "You have successfully purchased " . $package['name']]);
-
-            $pdo->commit();
-            $success = "Package purchased successfully!";
-            $user['balance'] -= $package['price'];
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            $error = "Purchase failed.";
-        }
-    }
-}
-
 $type = $_GET['type'] ?? 'internet';
 $stmt = $pdo->prepare("SELECT * FROM packages WHERE type = ? ORDER BY price ASC");
 $stmt->execute([$type]);
@@ -83,10 +46,7 @@ $packages = $stmt->fetchAll();
                 <p class="card-text text-muted mb-1"><?php echo htmlspecialchars($pkg['details']); ?></p>
                 <div class="d-flex justify-content-between align-items-center">
                     <small class="text-muted"><i class="fas fa-clock me-1"></i> Validity: <?php echo $pkg['validity']; ?></small>
-                    <form method="POST">
-                        <input type="hidden" name="package_id" value="<?php echo $pkg['id']; ?>">
-                        <button type="submit" class="btn btn-sm btn-outline-primary" onclick="return confirm('Buy this package?')">Buy Now</button>
-                    </form>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick='openPurchaseModal(<?php echo json_encode($pkg); ?>)'>Buy Now</button>
                 </div>
             </div>
         </div>
@@ -95,6 +55,60 @@ $packages = $stmt->fetchAll();
         endforeach;
     endif; ?>
 </div>
+
+<!-- Purchase Modal -->
+<div class="modal fade" id="purchaseModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="package_confirm.php" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Purchase Package</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="package_id" id="modal_package_id">
+                    <div class="mb-3">
+                        <label class="form-label">Selected Package</label>
+                        <input type="text" id="modal_package_name" class="form-control" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="text" id="modal_package_price" class="form-control" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mobile Operator</label>
+                        <select name="operator" class="form-select" required>
+                            <option value="">Select Operator</option>
+                            <option value="Grameenphone">Grameenphone</option>
+                            <option value="Robi">Robi</option>
+                            <option value="Banglalink">Banglalink</option>
+                            <option value="Airtel">Airtel</option>
+                            <option value="Teletalk">Teletalk</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mobile Number</label>
+                        <input type="text" name="phone_number" class="form-control" placeholder="01xxxxxxxxx" required pattern="01[3-9][0-9]{8}">
+                        <small class="text-muted">Enter a valid 11-digit mobile number.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Proceed to Checkout</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openPurchaseModal(pkg) {
+    $('#modal_package_id').val(pkg.id);
+    $('#modal_package_name').val(pkg.name);
+    $('#modal_package_price').val('৳' + pkg.price);
+    $('#purchaseModal').modal('show');
+}
+</script>
 
 <?php
 require_once 'includes/bottom_menu.php';

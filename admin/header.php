@@ -47,6 +47,7 @@ $site_name = $settings['site_name'] ?? 'Admin Panel';
         <a href="manage_rewards.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_rewards.php' ? 'active' : ''; ?>"><i class="fas fa-gift me-2"></i> Manage Rewards</a>
         <a href="give_reward.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'give_reward.php' ? 'active' : ''; ?>"><i class="fas fa-hand-holding-usd me-2"></i> Give Reward</a>
         <a href="reward_logs.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'reward_logs.php' ? 'active' : ''; ?>"><i class="fas fa-list me-2"></i> Reward Logs</a>
+        <a href="package_orders.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'package_orders.php' ? 'active' : ''; ?>"><i class="fas fa-shopping-cart me-2"></i> Package Orders</a>
         <a href="plans.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'plans.php' ? 'active' : ''; ?>"><i class="fas fa-box me-2"></i> Plans</a>
         <a href="packages.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'packages.php' ? 'active' : ''; ?>"><i class="fas fa-mobile-alt me-2"></i> Telecom Packs</a>
         <a href="settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>"><i class="fas fa-cog me-2"></i> Settings</a>

@@ -126,6 +126,19 @@ CREATE TABLE IF NOT EXISTS settings (
     setting_value TEXT
 );
 
+CREATE TABLE IF NOT EXISTS package_orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    package_id INT NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    operator VARCHAR(50) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE
+);
+
 -- Insert initial data
 INSERT INTO plans (name, price, duration_days, description) VALUES ('Basic Plan', 100.00, 30, 'Basic plan to access all features for 30 days.');
 
