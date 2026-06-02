@@ -50,6 +50,7 @@ $site_name = $settings['site_name'] ?? 'Admin Panel';
         <a href="package_orders.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'package_orders.php' ? 'active' : ''; ?>"><i class="fas fa-shopping-cart me-2"></i> Package Orders</a>
         <a href="plans.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'plans.php' ? 'active' : ''; ?>"><i class="fas fa-box me-2"></i> Plans</a>
         <a href="packages.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'packages.php' ? 'active' : ''; ?>"><i class="fas fa-mobile-alt me-2"></i> Telecom Packs</a>
+        <a href="payment_settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'payment_settings.php' ? 'active' : ''; ?>"><i class="fas fa-credit-card me-2"></i> Payment Settings</a>
         <a href="settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>"><i class="fas fa-cog me-2"></i> Settings</a>
         <a href="../logout.php"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
     </div>

@@ -49,25 +49,64 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </ul>
         </div>
 
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">Amount (BDT)</label>
-                <input type="number" name="amount" class="form-control" required min="10">
+        <ul class="nav nav-tabs mb-3" id="depositTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#autoDeposit">Auto Deposit</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#manualDeposit">Manual</button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Auto Deposit -->
+            <div class="tab-pane fade show active" id="autoDeposit">
+                <?php if (($settings['auto_deposit_status'] ?? 'disabled') == 'enabled'): ?>
+                <form action="initiate_payment.php" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Amount (BDT)</label>
+                        <input type="number" name="amount" class="form-control" required min="10" placeholder="Min. 10 BDT">
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 py-2">
+                        <i class="fas fa-bolt me-1"></i> Pay Now (Instant)
+                    </button>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">Supports bKash, Nagad, Cards, etc.</small>
+                    </div>
+                </form>
+                <?php else: ?>
+                    <div class="alert alert-secondary py-4 text-center">
+                        Auto deposit is currently disabled. Please use manual method.
+                    </div>
+                <?php endif; ?>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Payment Method</label>
-                <select name="method" class="form-select" required>
-                    <option value="bkash">bKash</option>
-                    <option value="nagad">Nagad</option>
-                    <option value="rocket">Rocket</option>
-                </select>
+
+            <!-- Manual Deposit -->
+            <div class="tab-pane fade" id="manualDeposit">
+                <div class="alert alert-info py-2 small">
+                    Send money to our numbers and submit the TxID.
+                </div>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Amount (BDT)</label>
+                        <input type="number" name="amount" class="form-control" required min="10">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <select name="method" class="form-select" required>
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
+                            <option value="rocket">Rocket</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Transaction ID</label>
+                        <input type="text" name="transaction_id" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Submit Deposit</button>
+                </form>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Transaction ID</label>
-                <input type="text" name="transaction_id" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Submit Deposit</button>
-        </form>
+        </div>
     </div>
 </div>
 

@@ -146,7 +146,11 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 ('site_name', 'Telecom Rewards'),
 ('bkash_number', '01700000000'),
 ('nagad_number', '01800000000'),
-('rocket_number', '01900000000');
+('rocket_number', '01900000000'),
+('gateway_store_id', 'example_store_id'),
+('gateway_store_password', 'example_store_pass'),
+('gateway_mode', 'sandbox'), -- sandbox or live
+('auto_deposit_status', 'enabled'); -- enabled or disabled
 
 -- Insert initial admin user (Password: admin123)
 INSERT INTO users (username, password, email, phone, is_admin, referral_code) VALUES
