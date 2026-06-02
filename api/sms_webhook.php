@@ -4,7 +4,11 @@ require_once __DIR__ . '/../config/db.php';
 // Security check: Match token sent by SMS Forwarder app
 // Expected header: X-Webhook-Token or as a POST parameter
 $headers = getallheaders();
-$sent_token = $headers['X-Webhook-Token'] ?? ($_POST['token'] ?? '');
+$inputJSON = file_get_contents('php://input');
+$input = json_decode($inputJSON, true);
+
+// Extract data from Header, POST or JSON Body
+$sent_token = $headers['X-Webhook-Token'] ?? ($headers['x-webhook-token'] ?? ($_POST['token'] ?? ($input['token'] ?? '')));
 
 $stmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'sms_webhook_token'");
 $correct_token = $stmt->fetchColumn();
@@ -14,8 +18,8 @@ if ($sent_token !== $correct_token) {
     die(json_encode(['status' => 'error', 'message' => 'Unauthorized']));
 }
 
-$sender = $_POST['from'] ?? ''; // Sender number of the SMS
-$body = $_POST['message'] ?? ''; // Content of the SMS
+$sender = $_POST['from'] ?? ($input['from'] ?? ''); // Sender number of the SMS
+$body = $_POST['message'] ?? ($input['message'] ?? ''); // Content of the SMS
 
 if (empty($body)) {
     die(json_encode(['status' => 'error', 'message' => 'Empty message']));

@@ -52,10 +52,18 @@ $has_active_plan = $stmt->fetchColumn() > 0;
         </a>
     </div>
     <div class="col-6">
+        <a href="earn.php" class="text-decoration-none">
+            <div class="card text-center p-3 shadow-sm h-100 border-primary">
+                <i class="fas fa-dollar-sign fa-2x text-primary mb-2"></i>
+                <h6 class="mb-0">Earn Money</h6>
+            </div>
+        </a>
+    </div>
+    <div class="col-6">
         <a href="rewards.php" class="text-decoration-none">
             <div class="card text-center p-3 shadow-sm h-100">
                 <i class="fas fa-gift fa-2x text-warning mb-2"></i>
-                <h6 class="mb-0">Rewards</h6>
+                <h6 class="mb-0">Daily Bonus</h6>
             </div>
         </a>
     </div>
