@@ -68,9 +68,27 @@ CREATE TABLE IF NOT EXISTS transactions (
 CREATE TABLE IF NOT EXISTS rewards (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    amount DECIMAL(10, 2) NOT NULL,
-    type VARCHAR(50) NOT NULL, -- 'ad', 'daily', 'game'
+    description TEXT,
+    amount DECIMAL(10, 2) DEFAULT 0.00,
+    percentage DECIMAL(5, 2) DEFAULT 0.00,
+    bonus_amount DECIMAL(10, 2) DEFAULT 0.00,
+    type VARCHAR(50) NOT NULL, -- 'ad', 'daily', 'game', 'referral', 'achievement', 'vip', 'manual'
+    frequency ENUM('one-time', 'daily', 'weekly', 'monthly') DEFAULT 'one-time',
+    min_deposit DECIMAL(10, 2) DEFAULT 0.00,
+    min_plan_price DECIMAL(10, 2) DEFAULT 0.00,
+    status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS reward_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    reward_id INT,
+    amount DECIMAL(10, 2) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (reward_id) REFERENCES rewards(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS referrals (

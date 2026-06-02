@@ -44,6 +44,9 @@ $site_name = $settings['site_name'] ?? 'Admin Panel';
         <a href="users.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'users.php' ? 'active' : ''; ?>"><i class="fas fa-users me-2"></i> Users</a>
         <a href="deposits.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'deposits.php' ? 'active' : ''; ?>"><i class="fas fa-wallet me-2"></i> Deposits <?php if($pending_deposits_count > 0) echo "<span class='badge bg-danger'>$pending_deposits_count</span>"; ?></a>
         <a href="withdrawals.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'withdrawals.php' ? 'active' : ''; ?>"><i class="fas fa-money-bill-wave me-2"></i> Withdrawals <?php if($pending_withdrawals_count > 0) echo "<span class='badge bg-danger'>$pending_withdrawals_count</span>"; ?></a>
+        <a href="manage_rewards.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_rewards.php' ? 'active' : ''; ?>"><i class="fas fa-gift me-2"></i> Manage Rewards</a>
+        <a href="give_reward.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'give_reward.php' ? 'active' : ''; ?>"><i class="fas fa-hand-holding-usd me-2"></i> Give Reward</a>
+        <a href="reward_logs.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'reward_logs.php' ? 'active' : ''; ?>"><i class="fas fa-list me-2"></i> Reward Logs</a>
         <a href="plans.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'plans.php' ? 'active' : ''; ?>"><i class="fas fa-box me-2"></i> Plans</a>
         <a href="packages.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'packages.php' ? 'active' : ''; ?>"><i class="fas fa-mobile-alt me-2"></i> Telecom Packs</a>
         <a href="settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>"><i class="fas fa-cog me-2"></i> Settings</a>
