@@ -80,6 +80,33 @@ CREATE TABLE IF NOT EXISTS rewards (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 2-Tier Referral Commissions
+CREATE TABLE IF NOT EXISTS referral_commissions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    referrer_id INT NOT NULL,
+    referee_id INT NOT NULL,
+    level INT NOT NULL, -- 1 or 2
+    amount DECIMAL(10, 2) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (referrer_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (referee_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Daily Leaderboard tracking
+CREATE TABLE IF NOT EXISTS daily_leaderboard (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    total_earned DECIMAL(10, 2) DEFAULT 0.00,
+    date DATE NOT NULL,
+    reward_given BOOLEAN DEFAULT FALSE,
+    UNIQUE KEY (user_id, date),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Update deposits table for fintech logic
+ALTER TABLE deposits ADD COLUMN sender_number VARCHAR(20) AFTER amount;
+
 CREATE TABLE IF NOT EXISTS reward_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,

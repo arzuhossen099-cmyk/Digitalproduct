@@ -22,6 +22,9 @@ if (isset($_POST['update_status'])) {
             $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'reward', ?, ?)");
             $stmt->execute([$sub['user_id'], $sub['reward_amount'], "Task Approved: " . $sub['title']]);
 
+            require_once '../includes/leaderboard_helper.php';
+            updateLeaderboard($pdo, $sub['user_id'], $sub['reward_amount']);
+
             $stmt = $pdo->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
             $stmt->execute([$sub['user_id'], "Your task submission for '" . $sub['title'] . "' was approved! ৳" . $sub['reward_amount'] . " added."]);
         } else {

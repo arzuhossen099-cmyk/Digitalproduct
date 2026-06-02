@@ -12,6 +12,8 @@ $total_users = $pdo->query("SELECT COUNT(*) FROM users WHERE is_admin = 0")->fet
 $total_deposits = $pdo->query("SELECT SUM(amount) FROM deposits WHERE status = 'approved'")->fetchColumn() ?? 0;
 $pending_deposits_count = $pdo->query("SELECT COUNT(*) FROM deposits WHERE status = 'pending'")->fetchColumn();
 $pending_withdrawals_count = $pdo->query("SELECT COUNT(*) FROM withdrawals WHERE status = 'pending'")->fetchColumn();
+$pending_tasks_count = $pdo->query("SELECT COUNT(*) FROM task_submissions WHERE status = 'pending'")->fetchColumn();
+$pending_orders_count = $pdo->query("SELECT COUNT(*) FROM package_orders WHERE status = 'pending'")->fetchColumn();
 
 // Site settings
 $stmt = $pdo->query("SELECT * FROM settings");
@@ -47,9 +49,9 @@ $site_name = $settings['site_name'] ?? 'Admin Panel';
         <a href="manage_rewards.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_rewards.php' ? 'active' : ''; ?>"><i class="fas fa-gift me-2"></i> Manage Rewards</a>
         <a href="give_reward.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'give_reward.php' ? 'active' : ''; ?>"><i class="fas fa-hand-holding-usd me-2"></i> Give Reward</a>
         <a href="reward_logs.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'reward_logs.php' ? 'active' : ''; ?>"><i class="fas fa-list me-2"></i> Reward Logs</a>
-        <a href="package_orders.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'package_orders.php' ? 'active' : ''; ?>"><i class="fas fa-shopping-cart me-2"></i> Package Orders</a>
+        <a href="package_orders.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'package_orders.php' ? 'active' : ''; ?>"><i class="fas fa-shopping-cart me-2"></i> Package Orders <?php if($pending_orders_count > 0) echo "<span class='badge bg-danger'>$pending_orders_count</span>"; ?></a>
         <a href="manage_tasks.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_tasks.php' ? 'active' : ''; ?>"><i class="fas fa-tasks me-2"></i> Social Tasks</a>
-        <a href="task_submissions.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'task_submissions.php' ? 'active' : ''; ?>"><i class="fas fa-check-double me-2"></i> Submissions</a>
+        <a href="task_submissions.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'task_submissions.php' ? 'active' : ''; ?>"><i class="fas fa-check-double me-2"></i> Submissions <?php if($pending_tasks_count > 0) echo "<span class='badge bg-danger'>$pending_tasks_count</span>"; ?></a>
         <a href="manage_ads.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_ads.php' ? 'active' : ''; ?>"><i class="fas fa-ad me-2"></i> Manage Ads</a>
         <a href="plans.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'plans.php' ? 'active' : ''; ?>"><i class="fas fa-box me-2"></i> Plans</a>
         <a href="packages.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'packages.php' ? 'active' : ''; ?>"><i class="fas fa-mobile-alt me-2"></i> Telecom Packs</a>

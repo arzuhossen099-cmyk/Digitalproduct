@@ -32,26 +32,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $new_referral_code = substr(md5(uniqid($username, true)), 0, 8);
 
-            // Check for referrer
-            $referred_by = null;
+            // Check for referrer (Level 1 and Level 2)
+            $referred_by_l1 = null;
+            $referred_by_l2 = null;
             if (!empty($referral_code_used)) {
-                $stmt = $pdo->prepare("SELECT id FROM users WHERE referral_code = ?");
+                $stmt = $pdo->prepare("SELECT id, referred_by FROM users WHERE referral_code = ?");
                 $stmt->execute([$referral_code_used]);
                 $referrer = $stmt->fetch();
                 if ($referrer) {
-                    $referred_by = $referrer['id'];
+                    $referred_by_l1 = $referrer['id'];
+                    $referred_by_l2 = $referrer['referred_by']; // Level 2 is the referrer's referrer
                 }
             }
 
             try {
                 $pdo->beginTransaction();
                 $stmt = $pdo->prepare("INSERT INTO users (username, password, email, phone, referral_code, referred_by) VALUES (?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$username, $hashed_password, $email, $phone, $new_referral_code, $referred_by]);
+                $stmt->execute([$username, $hashed_password, $email, $phone, $new_referral_code, $referred_by_l1]);
                 $user_id = $pdo->lastInsertId();
 
-                if ($referred_by) {
+                if ($referred_by_l1) {
                     $stmt = $pdo->prepare("INSERT INTO referrals (referrer_id, referee_id) VALUES (?, ?)");
-                    $stmt->execute([$referred_by, $user_id]);
+                    $stmt->execute([$referred_by_l1, $user_id]);
                 }
 
                 $pdo->commit();

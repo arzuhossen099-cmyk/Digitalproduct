@@ -12,11 +12,15 @@ if (!$ad) { header("Location: earn.php"); exit(); }
 $success = false;
 if (isset($_POST['ad_completed'])) {
     // Add logic to prevent fast refresh / multiple claims
+    require_once 'includes/leaderboard_helper.php';
+
     $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
     $stmt->execute([$ad['reward_amount'], $_SESSION['user_id']]);
 
     $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'reward', ?, ?)");
     $stmt->execute([$_SESSION['user_id'], $ad['reward_amount'], "Ad Reward: " . $ad['title']]);
+
+    updateLeaderboard($pdo, $_SESSION['user_id'], $ad['reward_amount']);
 
     $success = true;
 }

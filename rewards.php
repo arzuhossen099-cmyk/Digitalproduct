@@ -72,6 +72,9 @@ if (isset($_POST['claim_reward'])) {
                     $stmt = $pdo->prepare("INSERT INTO reward_logs (user_id, reward_id, amount, description) VALUES (?, ?, ?, ?)");
                     $stmt->execute([$_SESSION['user_id'], $reward_id, $final_amount, $reward['name']]);
 
+                    require_once 'includes/leaderboard_helper.php';
+                    updateLeaderboard($pdo, $_SESSION['user_id'], $final_amount);
+
                     // Notify user
                     $stmt = $pdo->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
                     $stmt->execute([$_SESSION['user_id'], "Congratulations! You claimed ৳" . number_format($final_amount, 2) . " from " . $reward['name']]);

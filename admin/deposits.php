@@ -51,6 +51,7 @@ $deposits = $stmt->fetchAll();
                         <th>Date</th>
                         <th>User</th>
                         <th>Amount</th>
+                        <th>Sender</th>
                         <th>Method</th>
                         <th>TrxID</th>
                         <th>Status</th>
@@ -63,6 +64,7 @@ $deposits = $stmt->fetchAll();
                         <td><small><?php echo date('d/m/y H:i', strtotime($d['created_at'])); ?></small></td>
                         <td><?php echo htmlspecialchars($d['username']); ?></td>
                         <td>৳<?php echo number_format($d['amount'], 2); ?></td>
+                        <td><?php echo htmlspecialchars($d['sender_number']); ?></td>
                         <td><?php echo ucfirst($d['method']); ?></td>
                         <td><code><?php echo htmlspecialchars($d['transaction_id']); ?></code></td>
                         <td>

@@ -36,11 +36,15 @@ $site_name = $settings['site_name'] ?? 'Telecom Rewards';
 </head>
 <body class="bg-light">
     <?php if (isset($_SESSION['user_id'])): ?>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow">
         <div class="container">
-            <a class="navbar-brand" href="index.php"><?php echo $site_name; ?></a>
-            <div class="ms-auto text-white">
-                <i class="fas fa-wallet me-1"></i> ৳<?php echo number_format($user['balance'], 2); ?>
+            <a class="navbar-brand d-flex align-items-center" href="index.php">
+                <i class="fas fa-bolt me-2 text-warning"></i> <?php echo $site_name; ?>
+            </a>
+            <div class="ms-auto">
+                <div class="badge bg-dark p-2 border border-secondary">
+                    <i class="fas fa-wallet me-1 text-success"></i> ৳<?php echo number_format($user['balance'], 2); ?>
+                </div>
             </div>
         </div>
     </nav>

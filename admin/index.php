@@ -1,37 +1,92 @@
 <?php
 require_once 'header.php';
+
+$total_withdrawals = $pdo->query("SELECT SUM(amount) FROM withdrawals WHERE status = 'approved'")->fetchColumn() ?? 0;
+$total_earning_tasks = $pdo->query("SELECT SUM(amount) FROM reward_logs")->fetchColumn() ?? 0;
+$active_users_today = $pdo->query("SELECT COUNT(DISTINCT id) FROM users WHERE status = 'active'")->fetchColumn(); // Simplified
 ?>
 
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 border-start border-primary border-4">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase small">Total Users</h6>
+                <h3 class="mb-0"><?php echo $total_users; ?></h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 border-start border-success border-4">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase small">Net Deposits</h6>
+                <h3 class="mb-0">৳<?php echo number_format($total_deposits, 2); ?></h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 border-start border-info border-4">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase small">User Earnings</h6>
+                <h3 class="mb-0">৳<?php echo number_format($total_earning_tasks, 2); ?></h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 border-start border-danger border-4">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase small">Total Payouts</h6>
+                <h3 class="mb-0">৳<?php echo number_format($total_withdrawals, 2); ?></h3>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4">
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 bg-primary text-white">
+    <div class="col-md-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">Pending Requests Overview</h5>
+            </div>
             <div class="card-body">
-                <h5 class="card-title">Total Users</h5>
-                <h2 class="mb-0"><?php echo $total_users; ?></h2>
+                <div class="row text-center g-4">
+                    <div class="col-4">
+                        <a href="deposits.php" class="text-decoration-none">
+                            <h2 class="text-warning"><?php echo $pending_deposits_count; ?></h2>
+                            <small class="text-muted">Deposits</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="withdrawals.php" class="text-decoration-none">
+                            <h2 class="text-danger"><?php echo $pending_withdrawals_count; ?></h2>
+                            <small class="text-muted">Withdrawals</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="task_submissions.php" class="text-decoration-none">
+                            <h2 class="text-info"><?php echo $pending_tasks_count; ?></h2>
+                            <small class="text-muted">Tasks</small>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 bg-success text-white">
-            <div class="card-body">
-                <h5 class="card-title">Total Deposits</h5>
-                <h2 class="mb-0">৳<?php echo number_format($total_deposits, 2); ?></h2>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">System Status</h5>
             </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 bg-warning text-dark">
             <div class="card-body">
-                <h5 class="card-title">Pending Deposits</h5>
-                <h2 class="mb-0"><?php echo $pending_deposits_count; ?></h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 bg-danger text-white">
-            <div class="card-body">
-                <h5 class="card-title">Pending Withdraws</h5>
-                <h2 class="mb-0"><?php echo $pending_withdrawals_count; ?></h2>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span>Active Users</span>
+                        <span class="badge bg-success rounded-pill"><?php echo $active_users_today; ?></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span>Pending Orders</span>
+                        <span class="badge bg-primary rounded-pill"><?php echo $pending_orders_count; ?></span>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

@@ -9,11 +9,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $amount = floatval($_POST['amount']);
     $method = $_POST['method'];
     $transaction_id = trim($_POST['transaction_id']);
+    $sender_number = trim($_POST['sender_number']);
 
     if ($amount < 10) {
         $error = "Minimum deposit is 10 BDT.";
     } elseif (empty($transaction_id)) {
         $error = "Transaction ID is required.";
+    } elseif (empty($sender_number)) {
+        $error = "Sender Number is required.";
     } else {
         try {
             $pdo->beginTransaction();
@@ -26,8 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if ($sms_match) {
                 // Auto-approve
-                $stmt = $pdo->prepare("INSERT INTO deposits (user_id, amount, method, transaction_id, status) VALUES (?, ?, ?, ?, 'approved')");
-                $stmt->execute([$_SESSION['user_id'], $amount, $method, $transaction_id]);
+                $stmt = $pdo->prepare("INSERT INTO deposits (user_id, amount, sender_number, method, transaction_id, status) VALUES (?, ?, ?, ?, ?, 'approved')");
+                $stmt->execute([$_SESSION['user_id'], $amount, $sender_number, $method, $transaction_id]);
 
                 $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
                 $stmt->execute([$amount, $_SESSION['user_id']]);
@@ -45,8 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $user['balance'] += $amount;
             } else {
                 // Submit for manual approval
-                $stmt = $pdo->prepare("INSERT INTO deposits (user_id, amount, method, transaction_id) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$_SESSION['user_id'], $amount, $method, $transaction_id]);
+                $stmt = $pdo->prepare("INSERT INTO deposits (user_id, amount, sender_number, method, transaction_id) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$_SESSION['user_id'], $amount, $sender_number, $method, $transaction_id]);
                 $success = "Deposit request submitted successfully! It will be approved soon.";
             }
 
@@ -131,6 +134,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <option value="nagad">Nagad</option>
                             <option value="rocket">Rocket</option>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sender Number</label>
+                        <input type="text" name="sender_number" class="form-control" required placeholder="01xxxxxxxxx">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Transaction ID</label>
