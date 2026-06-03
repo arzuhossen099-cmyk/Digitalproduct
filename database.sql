@@ -81,6 +81,15 @@ CREATE TABLE IF NOT EXISTS rewards (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS games (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    icon_class VARCHAR(100) DEFAULT 'fas fa-gamepad',
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    link VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 2-Tier Referral Commissions
 CREATE TABLE IF NOT EXISTS referral_commissions (
     id INT AUTO_INCREMENT PRIMARY KEY,

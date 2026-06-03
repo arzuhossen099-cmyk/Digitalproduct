@@ -84,21 +84,28 @@ if (isset($_SESSION['error'])) {
             </div>
         <?php endif; ?>
     </div>
+    <!-- Dynamic Games -->
+    <?php
+    $stmt = $pdo->query("SELECT * FROM games WHERE status = 'active' ORDER BY created_at DESC");
+    $dynamic_games = $stmt->fetchAll();
+    foreach ($dynamic_games as $game):
+    ?>
     <div class="col-6">
         <?php if ($user['user_level'] >= 2): ?>
-            <a href="games.php" class="text-decoration-none">
+            <a href="<?php echo htmlspecialchars($game['link'] ?? ''); ?>" class="text-decoration-none">
                 <div class="card text-center p-3 shadow-sm h-100">
-                    <i class="fas fa-gamepad fa-2x text-danger mb-2"></i>
-                    <h6 class="mb-0">Games</h6>
+                    <i class="<?php echo htmlspecialchars($game['icon_class'] ?? 'fas fa-gamepad'); ?> fa-2x text-danger mb-2"></i>
+                    <h6 class="mb-0"><?php echo htmlspecialchars($game['name'] ?? 'Game'); ?></h6>
                 </div>
             </a>
         <?php else: ?>
             <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
                 <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted">Games</h6>
+                <h6 class="mb-0 text-muted"><?php echo htmlspecialchars($game['name'] ?? 'Game'); ?></h6>
             </div>
         <?php endif; ?>
     </div>
+    <?php endforeach; ?>
     <div class="col-6">
         <?php if ($user['user_level'] >= 2): ?>
             <a href="deposit.php" class="text-decoration-none">

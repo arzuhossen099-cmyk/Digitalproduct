@@ -31,15 +31,20 @@ switch ($action) {
         } elseif ($amount > $balance) {
             echo json_encode(['status' => 'error', 'message' => 'Insufficient balance']);
         } else {
+            $crash_point = generateCrashPoint($aviator_settings);
+            // Store crash point and bet in session for security
+            $_SESSION['aviator_crash_point'] = $crash_point;
+            $_SESSION['aviator_bet_amount'] = $amount;
+
             $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?")->execute([$amount, $user_id]);
-            echo json_encode(['status' => 'success', 'new_balance' => $balance - $amount, 'crash_point' => generateCrashPoint($aviator_settings)]);
+            echo json_encode(['status' => 'success', 'new_balance' => $balance - $amount, 'crash_point' => $crash_point]);
         }
         break;
 
     case 'cashout':
         $multiplier = floatval($_POST['multiplier']);
-        $crash_point = floatval($_POST['crash_point']);
-        $bet_amount = floatval($_POST['bet_amount']);
+        $crash_point = $_SESSION['aviator_crash_point'] ?? 0;
+        $bet_amount = $_SESSION['aviator_bet_amount'] ?? 0;
         $win_amount = round($bet_amount * $multiplier, 2);
 
         if ($multiplier >= $crash_point) {
@@ -58,6 +63,7 @@ switch ($action) {
                 ->execute([$user_id, $win_amount, "Aviator Win @ {$multiplier}x"]);
 
             $pdo->commit();
+            unset($_SESSION['aviator_crash_point'], $_SESSION['aviator_bet_amount']);
             echo json_encode(['status' => 'success', 'win_amount' => $win_amount, 'new_balance' => number_format($new_balance, 2)]);
         } catch (Exception $e) {
             $pdo->rollBack();
@@ -66,12 +72,15 @@ switch ($action) {
         break;
 
     case 'crash':
-        $bet_amount = floatval($_POST['bet_amount']);
-        $crash_point = floatval($_POST['crash_point']);
+        $crash_point = $_SESSION['aviator_crash_point'] ?? 0;
+        $bet_amount = $_SESSION['aviator_bet_amount'] ?? 0;
 
-        $pdo->prepare("INSERT INTO aviator_history (user_id, bet_amount, multiplier, win_amount, crash_point, result) VALUES (?, ?, ?, ?, ?, 'loss')")
-            ->execute([$user_id, $bet_amount, 0, 0, $crash_point]);
+        if ($bet_amount > 0) {
+            $pdo->prepare("INSERT INTO aviator_history (user_id, bet_amount, multiplier, win_amount, crash_point, result) VALUES (?, ?, ?, ?, ?, 'loss')")
+                ->execute([$user_id, $bet_amount, 0, 0, $crash_point]);
+        }
 
+        unset($_SESSION['aviator_crash_point'], $_SESSION['aviator_bet_amount']);
         echo json_encode(['status' => 'success']);
         break;
 

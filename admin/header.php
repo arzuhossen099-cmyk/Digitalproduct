@@ -53,6 +53,7 @@ $site_name = $settings['site_name'] ?? 'Admin Panel';
         <a href="manage_tasks.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_tasks.php' ? 'active' : ''; ?>"><i class="fas fa-tasks me-2"></i> Social Tasks</a>
         <a href="task_submissions.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'task_submissions.php' ? 'active' : ''; ?>"><i class="fas fa-check-double me-2"></i> Submissions <?php if($pending_tasks_count > 0) echo "<span class='badge bg-danger'>$pending_tasks_count</span>"; ?></a>
         <a href="manage_ads.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_ads.php' ? 'active' : ''; ?>"><i class="fas fa-ad me-2"></i> Manage Ads</a>
+        <a href="games.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'games.php' ? 'active' : ''; ?>"><i class="fas fa-gamepad me-2"></i> Manage Games</a>
         <a href="plans.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'plans.php' ? 'active' : ''; ?>"><i class="fas fa-box me-2"></i> Plans</a>
         <a href="packages.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'packages.php' ? 'active' : ''; ?>"><i class="fas fa-mobile-alt me-2"></i> Telecom Packs</a>
         <a href="payment_settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'payment_settings.php' ? 'active' : ''; ?>"><i class="fas fa-credit-card me-2"></i> Payment Settings</a>

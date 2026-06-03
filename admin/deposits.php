@@ -62,11 +62,11 @@ $deposits = $stmt->fetchAll();
                     <?php foreach ($deposits as $d): ?>
                     <tr>
                         <td><small><?php echo date('d/m/y H:i', strtotime($d['created_at'])); ?></small></td>
-                        <td><?php echo htmlspecialchars($d['username']); ?></td>
-                        <td>৳<?php echo number_format($d['amount'], 2); ?></td>
-                        <td><?php echo htmlspecialchars($d['sender_number']); ?></td>
-                        <td><?php echo ucfirst($d['method']); ?></td>
-                        <td><code><?php echo htmlspecialchars($d['transaction_id']); ?></code></td>
+                        <td><?php echo htmlspecialchars($d['username'] ?? ''); ?></td>
+                        <td>৳<?php echo number_format($d['amount'] ?? 0, 2); ?></td>
+                        <td><?php echo htmlspecialchars($d['sender_number'] ?? ''); ?></td>
+                        <td><?php echo ucfirst($d['method'] ?? ''); ?></td>
+                        <td><code><?php echo htmlspecialchars($d['transaction_id'] ?? ''); ?></code></td>
                         <td>
                             <span class="badge bg-<?php
                                 echo $d['status'] == 'pending' ? 'warning' : ($d['status'] == 'approved' ? 'success' : 'danger');
