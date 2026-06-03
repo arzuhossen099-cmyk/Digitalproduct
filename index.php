@@ -34,7 +34,15 @@ $has_active_plan = $stmt->fetchColumn() > 0;
 </div>
 <?php endif; ?>
 
+<?php
+if (isset($_SESSION['error'])) {
+    echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">' . $_SESSION['error'] . '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+    unset($_SESSION['error']);
+}
+?>
+
 <div class="row g-3">
+    <!-- Level 1 Accessible -->
     <div class="col-6">
         <a href="recharge.php" class="text-decoration-none">
             <div class="card text-center p-3 shadow-sm h-100">
@@ -52,14 +60,6 @@ $has_active_plan = $stmt->fetchColumn() > 0;
         </a>
     </div>
     <div class="col-6">
-        <a href="earn.php" class="text-decoration-none">
-            <div class="card text-center p-3 shadow-sm h-100 border-primary">
-                <i class="fas fa-dollar-sign fa-2x text-primary mb-2"></i>
-                <h6 class="mb-0">Earn Money</h6>
-            </div>
-        </a>
-    </div>
-    <div class="col-6">
         <a href="rewards.php" class="text-decoration-none">
             <div class="card text-center p-3 shadow-sm h-100">
                 <i class="fas fa-gift fa-2x text-warning mb-2"></i>
@@ -67,29 +67,82 @@ $has_active_plan = $stmt->fetchColumn() > 0;
             </div>
         </a>
     </div>
+
+    <!-- Level 2 Restricted -->
     <div class="col-6">
-        <a href="games.php" class="text-decoration-none">
-            <div class="card text-center p-3 shadow-sm h-100">
-                <i class="fas fa-gamepad fa-2x text-danger mb-2"></i>
-                <h6 class="mb-0">Games</h6>
+        <?php if ($user['user_level'] >= 2): ?>
+            <a href="earn.php" class="text-decoration-none">
+                <div class="card text-center p-3 shadow-sm h-100 border-primary">
+                    <i class="fas fa-dollar-sign fa-2x text-primary mb-2"></i>
+                    <h6 class="mb-0">Earn Money</h6>
+                </div>
+            </a>
+        <?php else: ?>
+            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
+                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
+                <h6 class="mb-0 text-muted">Earn Money</h6>
             </div>
-        </a>
+        <?php endif; ?>
     </div>
     <div class="col-6">
-        <a href="deposit.php" class="text-decoration-none">
-            <div class="card text-center p-3 shadow-sm h-100">
-                <i class="fas fa-plus-circle fa-2x text-info mb-2"></i>
-                <h6 class="mb-0">Deposit</h6>
+        <?php if ($user['user_level'] >= 2): ?>
+            <a href="games.php" class="text-decoration-none">
+                <div class="card text-center p-3 shadow-sm h-100">
+                    <i class="fas fa-gamepad fa-2x text-danger mb-2"></i>
+                    <h6 class="mb-0">Games</h6>
+                </div>
+            </a>
+        <?php else: ?>
+            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
+                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
+                <h6 class="mb-0 text-muted">Games</h6>
             </div>
-        </a>
+        <?php endif; ?>
     </div>
     <div class="col-6">
-        <a href="withdraw.php" class="text-decoration-none">
-            <div class="card text-center p-3 shadow-sm h-100">
-                <i class="fas fa-minus-circle fa-2x text-secondary mb-2"></i>
-                <h6 class="mb-0">Withdraw</h6>
+        <?php if ($user['user_level'] >= 2): ?>
+            <a href="deposit.php" class="text-decoration-none">
+                <div class="card text-center p-3 shadow-sm h-100">
+                    <i class="fas fa-plus-circle fa-2x text-info mb-2"></i>
+                    <h6 class="mb-0">Deposit</h6>
+                </div>
+            </a>
+        <?php else: ?>
+            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
+                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
+                <h6 class="mb-0 text-muted">Deposit</h6>
             </div>
-        </a>
+        <?php endif; ?>
+    </div>
+    <div class="col-6">
+        <?php if ($user['user_level'] >= 2): ?>
+            <a href="aviator.php" class="text-decoration-none">
+                <div class="card text-center p-3 shadow-sm h-100 border-danger">
+                    <i class="fas fa-plane-departure fa-2x text-danger mb-2"></i>
+                    <h6 class="mb-0 text-danger">Aviator Game</h6>
+                </div>
+            </a>
+        <?php else: ?>
+            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
+                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
+                <h6 class="mb-0 text-muted">Aviator Game</h6>
+            </div>
+        <?php endif; ?>
+    </div>
+    <div class="col-6">
+        <?php if ($user['user_level'] >= 2): ?>
+            <a href="withdraw.php" class="text-decoration-none">
+                <div class="card text-center p-3 shadow-sm h-100">
+                    <i class="fas fa-minus-circle fa-2x text-secondary mb-2"></i>
+                    <h6 class="mb-0">Withdraw</h6>
+                </div>
+            </a>
+        <?php else: ?>
+            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
+                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
+                <h6 class="mb-0 text-muted">Withdraw</h6>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 

@@ -4,9 +4,10 @@ require_once 'header.php';
 if (isset($_POST['update_balance'])) {
     $uid = intval($_POST['user_id']);
     $new_balance = floatval($_POST['balance']);
-    $stmt = $pdo->prepare("UPDATE users SET balance = ? WHERE id = ?");
-    $stmt->execute([$new_balance, $uid]);
-    echo "<div class='alert alert-success'>Balance updated!</div>";
+    $new_level = intval($_POST['user_level']);
+    $stmt = $pdo->prepare("UPDATE users SET balance = ?, user_level = ? WHERE id = ?");
+    $stmt->execute([$new_balance, $new_level, $uid]);
+    echo "<div class='alert alert-success'>User updated!</div>";
 }
 
 if (isset($_GET['toggle_status'])) {
@@ -32,6 +33,7 @@ $users = $stmt->fetchAll();
                         <th>Username</th>
                         <th>Phone</th>
                         <th>Balance</th>
+                        <th>Level</th>
                         <th>Status</th>
                         <th>Joined</th>
                         <th>Action</th>
@@ -46,7 +48,8 @@ $users = $stmt->fetchAll();
                         <td>
                             <form method="POST" class="d-flex">
                                 <input type="hidden" name="user_id" value="<?php echo $u['id']; ?>">
-                                <input type="number" step="0.01" name="balance" class="form-control form-control-sm me-1" value="<?php echo $u['balance']; ?>" style="width: 100px;">
+                                <input type="number" step="0.01" name="balance" class="form-control form-control-sm me-1" value="<?php echo $u['balance']; ?>" style="width: 80px;" title="Balance">
+                                <input type="number" name="user_level" class="form-control form-control-sm me-1" value="<?php echo $u['user_level']; ?>" style="width: 50px;" title="Level">
                                 <button type="submit" name="update_balance" class="btn btn-sm btn-primary">Update</button>
                             </form>
                         </td>

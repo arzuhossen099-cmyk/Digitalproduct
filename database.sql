@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     referral_code VARCHAR(20) UNIQUE,
     referred_by INT,
     is_admin BOOLEAN DEFAULT FALSE,
+    user_level INT DEFAULT 1,
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (referred_by) REFERENCES users(id) ON DELETE SET NULL
