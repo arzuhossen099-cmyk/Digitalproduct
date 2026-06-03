@@ -175,6 +175,7 @@ CREATE TABLE IF NOT EXISTS packages (
     name VARCHAR(100) NOT NULL,
     type ENUM('internet', 'sms', 'talktime') NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
+    commission DECIMAL(10, 2) DEFAULT 0.00,
     commission_type ENUM('fixed', 'percent') DEFAULT 'fixed',
     comm_level1 DECIMAL(10, 2) DEFAULT 0.00,
     comm_level2 DECIMAL(10, 2) DEFAULT 0.00,

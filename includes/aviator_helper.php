@@ -11,6 +11,12 @@ function isAviatorActive($pdo) {
 }
 
 function generateCrashPoint($settings) {
+    // Check Manual Control
+    if (($settings['control_mode'] ?? 'auto') === 'manual') {
+        $manual_point = floatval($settings['next_crash_point'] ?? 0);
+        if ($manual_point >= 1.00) return $manual_point;
+    }
+
     $rand = mt_rand(1, 100);
     $point = 0;
 

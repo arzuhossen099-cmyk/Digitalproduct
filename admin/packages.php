@@ -5,6 +5,7 @@ if (isset($_POST['add_package'])) {
     $name = $_POST['name'];
     $type = $_POST['type'];
     $price = $_POST['price'];
+    $commission = $_POST['commission'];
     $comm_type = $_POST['commission_type'];
     $comm1 = $_POST['comm_level1'];
     $comm2 = $_POST['comm_level2'];
@@ -12,8 +13,8 @@ if (isset($_POST['add_package'])) {
     $validity = $_POST['validity'];
     $details = $_POST['details'];
 
-    $stmt = $pdo->prepare("INSERT INTO packages (name, type, price, commission_type, comm_level1, comm_level2, comm_level3, validity, details) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$name, $type, $price, $comm_type, $comm1, $comm2, $comm3, $validity, $details]);
+    $stmt = $pdo->prepare("INSERT INTO packages (name, type, price, commission, commission_type, comm_level1, comm_level2, comm_level3, validity, details) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$name, $type, $price, $commission, $comm_type, $comm1, $comm2, $comm3, $validity, $details]);
     echo "<div class='alert alert-success'>Package added!</div>";
 }
 
@@ -48,8 +49,12 @@ $packages = $stmt->fetchAll();
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Price (BDT)</label>
+                        <label class="form-label">Base Price (BDT)</label>
                         <input type="number" name="price" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Extra Commission/Charge (BDT)</label>
+                        <input type="number" step="0.01" name="commission" class="form-control" value="0" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Commission Type</label>

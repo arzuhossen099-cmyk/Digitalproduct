@@ -37,11 +37,20 @@ $packages = $stmt->fetchAll();
         foreach ($packages as $pkg):
     ?>
     <div class="col-12">
+        <?php
+        $commission = $pkg['commission'] ?? 0;
+        $total_payable = $pkg['price'] + $commission;
+        ?>
         <div class="card shadow-sm">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h5 class="card-title mb-0"><?php echo htmlspecialchars($pkg['name']); ?></h5>
-                    <span class="h5 mb-0 text-primary">৳<?php echo number_format($pkg['price'], 2); ?></span>
+                    <div class="text-end">
+                        <span class="h5 mb-0 text-primary">৳<?php echo number_format($total_payable, 2); ?></span><br>
+                        <?php if ($commission > 0): ?>
+                            <span class="badge bg-info text-dark" style="font-size: 0.7rem;">+৳<?php echo number_format($commission, 2); ?> Comm. included</span>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <p class="card-text text-muted mb-1"><?php echo htmlspecialchars($pkg['details']); ?></p>
                 <div class="d-flex justify-content-between align-items-center">
@@ -71,9 +80,19 @@ $packages = $stmt->fetchAll();
                         <label class="form-label">Selected Package</label>
                         <input type="text" id="modal_package_name" class="form-control" readonly>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Price</label>
-                        <input type="text" id="modal_package_price" class="form-control" readonly>
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <label class="form-label small">Base Price</label>
+                            <input type="text" id="modal_package_price" class="form-control" readonly>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small">Commission</label>
+                            <input type="text" id="modal_package_commission" class="form-control" readonly>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small">Total Payable</label>
+                            <input type="text" id="modal_total_payable" class="form-control fw-bold border-primary" readonly>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Mobile Operator</label>
@@ -103,9 +122,15 @@ $packages = $stmt->fetchAll();
 
 <script>
 function openPurchaseModal(pkg) {
+    const commission = parseFloat(pkg.commission || 0);
+    const price = parseFloat(pkg.price);
+    const total = price + commission;
+
     $('#modal_package_id').val(pkg.id);
     $('#modal_package_name').val(pkg.name);
-    $('#modal_package_price').val('৳' + pkg.price);
+    $('#modal_package_price').val('৳' + price.toFixed(2));
+    $('#modal_package_commission').val('৳' + commission.toFixed(2));
+    $('#modal_total_payable').val('৳' + total.toFixed(2));
     $('#purchaseModal').modal('show');
 }
 </script>
