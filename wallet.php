@@ -5,8 +5,16 @@ require_once 'includes/auth_check.php';
 
 <div class="card shadow-sm text-center mb-4">
     <div class="card-body">
-        <h5 class="card-title text-muted">Total Balance</h5>
-        <h1 class="display-4 text-primary">৳<?php echo number_format($user['balance'], 2); ?></h1>
+        <div class="row">
+            <div class="col-6 border-end">
+                <h6 class="text-muted small">Main Balance</h6>
+                <h3 class="text-primary">৳<?php echo number_format($user['balance'] ?? 0, 2); ?></h3>
+            </div>
+            <div class="col-6">
+                <h6 class="text-muted small">Commission Balance</h6>
+                <h3 class="text-success">৳<?php echo number_format($user['commission_balance'] ?? 0, 2); ?></h3>
+            </div>
+        </div>
         <div class="row mt-4">
             <div class="col">
                 <a href="deposit.php" class="btn btn-outline-success w-100">Deposit</a>
@@ -33,8 +41,8 @@ require_once 'includes/auth_check.php';
         <div class="list-group-item">
             <div class="d-flex justify-content-between">
                 <span class="fw-bold"><?php echo ucfirst($tx['type']); ?></span>
-                <span class="<?php echo in_array($tx['type'], ['deposit', 'reward']) ? 'text-success' : 'text-danger'; ?>">
-                    <?php echo in_array($tx['type'], ['deposit', 'reward']) ? '+' : '-'; ?>৳<?php echo number_format($tx['amount'], 2); ?>
+                <span class="<?php echo in_array($tx['type'], ['deposit', 'reward', 'commission']) ? 'text-success' : 'text-danger'; ?>">
+                    <?php echo in_array($tx['type'], ['deposit', 'reward', 'commission']) ? '+' : '-'; ?>৳<?php echo number_format($tx['amount'], 2); ?>
                 </span>
             </div>
             <small class="text-muted"><?php echo date('d M, h:i A', strtotime($tx['created_at'])); ?></small>

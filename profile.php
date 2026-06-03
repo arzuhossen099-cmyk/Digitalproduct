@@ -19,6 +19,10 @@ require_once 'includes/auth_check.php';
             <input type="text" class="form-control" value="<?php echo htmlspecialchars($user['phone']); ?>" readonly>
         </div>
         <div class="mb-3">
+            <label class="form-label">User Level</label>
+            <input type="text" class="form-control" value="Level <?php echo $user['user_level'] ?? 1; ?>" readonly>
+        </div>
+        <div class="mb-3">
             <label class="form-label">Joined</label>
             <input type="text" class="form-control" value="<?php echo date('d M Y', strtotime($user['created_at'])); ?>" readonly>
         </div>

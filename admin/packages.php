@@ -5,11 +5,15 @@ if (isset($_POST['add_package'])) {
     $name = $_POST['name'];
     $type = $_POST['type'];
     $price = $_POST['price'];
+    $comm_type = $_POST['commission_type'];
+    $comm1 = $_POST['comm_level1'];
+    $comm2 = $_POST['comm_level2'];
+    $comm3 = $_POST['comm_level3'];
     $validity = $_POST['validity'];
     $details = $_POST['details'];
 
-    $stmt = $pdo->prepare("INSERT INTO packages (name, type, price, validity, details) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$name, $type, $price, $validity, $details]);
+    $stmt = $pdo->prepare("INSERT INTO packages (name, type, price, commission_type, comm_level1, comm_level2, comm_level3, validity, details) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$name, $type, $price, $comm_type, $comm1, $comm2, $comm3, $validity, $details]);
     echo "<div class='alert alert-success'>Package added!</div>";
 }
 
@@ -46,6 +50,27 @@ $packages = $stmt->fetchAll();
                     <div class="mb-3">
                         <label class="form-label">Price (BDT)</label>
                         <input type="number" name="price" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Commission Type</label>
+                        <select name="commission_type" class="form-select">
+                            <option value="fixed">Fixed Amount</option>
+                            <option value="percent">Percentage (%)</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 mb-3">
+                            <label class="form-label small">Lvl 1 Comm</label>
+                            <input type="number" step="0.01" name="comm_level1" class="form-control" value="0">
+                        </div>
+                        <div class="col-4 mb-3">
+                            <label class="form-label small">Lvl 2 Comm</label>
+                            <input type="number" step="0.01" name="comm_level2" class="form-control" value="0">
+                        </div>
+                        <div class="col-4 mb-3">
+                            <label class="form-label small">Lvl 3 Comm</label>
+                            <input type="number" step="0.01" name="comm_level3" class="form-control" value="0">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Validity</label>

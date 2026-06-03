@@ -3,16 +3,53 @@ require_once 'header.php';
 
 if (isset($_GET['approve'])) {
     $id = intval($_GET['approve']);
-    $stmt = $pdo->prepare("UPDATE package_orders SET status = 'approved' WHERE id = ? AND status = 'pending'");
-    if ($stmt->execute()) {
-        $stmt = $pdo->prepare("SELECT user_id, amount FROM package_orders WHERE id = ?");
-        $stmt->execute([$id]);
-        $order = $stmt->fetch();
-        if ($order) {
+
+    // Fetch order and package details
+    $stmt = $pdo->prepare("SELECT po.*, p.commission_type, p.comm_level1, p.comm_level2, p.comm_level3, u.user_level FROM package_orders po JOIN packages p ON po.package_id = p.id JOIN users u ON po.user_id = u.id WHERE po.id = ? AND po.status = 'pending'");
+    $stmt->execute([$id]);
+    $order = $stmt->fetch();
+
+    if ($order) {
+        $pdo->beginTransaction();
+        try {
+            // Update order status
+            $stmt = $pdo->prepare("UPDATE package_orders SET status = 'approved' WHERE id = ?");
+            $stmt->execute([$id]);
+
+            // Calculate Commission
+            $user_level = intval($order['user_level'] ?? 1);
+            $comm_rate = 0;
+            if ($user_level == 1) $comm_rate = $order['comm_level1'];
+            elseif ($user_level == 2) $comm_rate = $order['comm_level2'];
+            elseif ($user_level >= 3) $comm_rate = $order['comm_level3'];
+
+            $commission_amount = 0;
+            if ($order['commission_type'] == 'percent') {
+                $commission_amount = ($order['amount'] * $comm_rate) / 100;
+            } else {
+                $commission_amount = $comm_rate;
+            }
+
+            if ($commission_amount > 0) {
+                // Update User Commission Balance
+                $stmt = $pdo->prepare("UPDATE users SET commission_balance = commission_balance + ? WHERE id = ?");
+                $stmt->execute([$commission_amount, $order['user_id']]);
+
+                // Record Transaction
+                $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'commission', ?, ?)");
+                $stmt->execute([$order['user_id'], $commission_amount, "Commission earned from " . $order['package_name']]);
+            }
+
+            // Notify User
             $stmt = $pdo->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
-            $stmt->execute([$order['user_id'], "Your package order has been approved and delivered!"]);
+            $stmt->execute([$order['user_id'], "Your package order has been approved! Commission earned: ৳" . number_format($commission_amount, 2)]);
+
+            $pdo->commit();
+            echo "<div class='alert alert-success'>Order approved and commission credited!</div>";
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            echo "<div class='alert alert-danger'>Error approving order: " . $e->getMessage() . "</div>";
         }
-        echo "<div class='alert alert-success'>Order approved!</div>";
     }
 }
 

@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     referred_by INT,
     is_admin BOOLEAN DEFAULT FALSE,
     user_level INT DEFAULT 1,
+    commission_balance DECIMAL(10, 2) DEFAULT 0.00,
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (referred_by) REFERENCES users(id) ON DELETE SET NULL
@@ -174,6 +175,10 @@ CREATE TABLE IF NOT EXISTS packages (
     name VARCHAR(100) NOT NULL,
     type ENUM('internet', 'sms', 'talktime') NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
+    commission_type ENUM('fixed', 'percent') DEFAULT 'fixed',
+    comm_level1 DECIMAL(10, 2) DEFAULT 0.00,
+    comm_level2 DECIMAL(10, 2) DEFAULT 0.00,
+    comm_level3 DECIMAL(10, 2) DEFAULT 0.00,
     validity VARCHAR(50) NOT NULL,
     details TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
