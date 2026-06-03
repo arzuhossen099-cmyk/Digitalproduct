@@ -98,8 +98,8 @@ if (($aviator_settings['game_status'] ?? 'inactive') != 'active') {
 let isPlaying = false;
 let currentBet = 0;
 let currentMultiplier = 1.00;
-let crashPoint = 0;
 let gameInterval;
+let statusInterval;
 let planePos = { x: 10, y: 20 };
 const minBet = <?php echo $aviator_settings['min_bet'] ?? 10; ?>;
 const maxBet = <?php echo $aviator_settings['max_bet'] ?? 1000; ?>;
@@ -147,7 +147,6 @@ function placeBet() {
         success: function(res) {
             if (res.status == 'success') {
                 currentBet = amount;
-                crashPoint = res.crash_point; // Received securely from server
                 startGame();
             } else {
                 alert(res.message);
@@ -167,6 +166,16 @@ function startGame() {
     $('#airplane-container').css({ left: '10%', bottom: '20px' });
 
     gameInterval = setInterval(updateGame, 80);
+    statusInterval = setInterval(checkStatus, 500);
+}
+
+function checkStatus() {
+    if (!isPlaying) return;
+    $.get('api/aviator.php?action=status&multiplier=' + currentMultiplier, function(res) {
+        if (res.status == 'crashed') {
+            crashGame(res.crash_point);
+        }
+    }, 'json');
 }
 
 function updateGame() {
@@ -197,11 +206,12 @@ function updateGame() {
 function cashOut() {
     if (!isPlaying) return;
     clearInterval(gameInterval);
+    clearInterval(statusInterval);
 
     $.ajax({
         url: 'api/aviator.php',
         type: 'POST',
-        data: { action: 'cashout', multiplier: currentMultiplier, crash_point: crashPoint, bet_amount: currentBet },
+        data: { action: 'cashout', multiplier: currentMultiplier },
         dataType: 'json',
         success: function(res) {
             if (res.status == 'success') {
@@ -220,24 +230,17 @@ function cashOut() {
     });
 }
 
-function crashGame() {
+function crashGame(cp) {
     clearInterval(gameInterval);
+    clearInterval(statusInterval);
     isPlaying = false;
 
     $('#crash-overlay').removeClass('d-none');
-    $('#final-crash-point').text(crashPoint.toFixed(2) + 'x');
+    $('#final-crash-point').text(parseFloat(cp).toFixed(2) + 'x');
     $('#cashout-btn').addClass('d-none');
     $('#bet-btn').removeClass('d-none');
 
-    $.ajax({
-        url: 'api/aviator.php',
-        type: 'POST',
-        data: { action: 'crash', bet_amount: currentBet, crash_point: crashPoint },
-        dataType: 'json',
-        success: function() {
-            loadHistory();
-        }
-    });
+    loadHistory();
 }
 
 function loadHistory() {

@@ -32,8 +32,7 @@ $users = $stmt->fetchAll();
                         <th>ID</th>
                         <th>Username</th>
                         <th>Phone</th>
-                        <th>Balance</th>
-                        <th>Level</th>
+                        <th>Balance & Level</th>
                         <th>Status</th>
                         <th>Joined</th>
                         <th>Action</th>

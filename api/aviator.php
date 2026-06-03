@@ -37,7 +37,17 @@ switch ($action) {
             $_SESSION['aviator_bet_amount'] = $amount;
 
             $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?")->execute([$amount, $user_id]);
-            echo json_encode(['status' => 'success', 'new_balance' => $balance - $amount, 'crash_point' => $crash_point]);
+            echo json_encode(['status' => 'success', 'new_balance' => $balance - $amount]);
+        }
+        break;
+
+    case 'status':
+        $current_multiplier = floatval($_GET['multiplier']);
+        $crash_point = $_SESSION['aviator_crash_point'] ?? 0;
+        if ($current_multiplier >= $crash_point) {
+            echo json_encode(['status' => 'crashed', 'crash_point' => $crash_point]);
+        } else {
+            echo json_encode(['status' => 'flying']);
         }
         break;
 
@@ -48,7 +58,11 @@ switch ($action) {
         $win_amount = round($bet_amount * $multiplier, 2);
 
         if ($multiplier >= $crash_point) {
-            echo json_encode(['status' => 'error', 'message' => 'Game already crashed']);
+            // Log as loss because it crashed
+            $pdo->prepare("INSERT INTO aviator_history (user_id, bet_amount, multiplier, win_amount, crash_point, result) VALUES (?, ?, ?, ?, ?, 'loss')")
+                ->execute([$user_id, $bet_amount, 0, 0, $crash_point]);
+            unset($_SESSION['aviator_crash_point'], $_SESSION['aviator_bet_amount']);
+            echo json_encode(['status' => 'error', 'message' => 'Too late! Game already crashed.']);
             exit;
         }
 

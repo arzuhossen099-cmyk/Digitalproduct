@@ -70,7 +70,7 @@ if (isset($_SESSION['error'])) {
 
     <!-- Level 2 Restricted -->
     <div class="col-6">
-        <?php if ($user['user_level'] >= 2): ?>
+        <?php if (($user['user_level'] ?? 1) >= 2): ?>
             <a href="earn.php" class="text-decoration-none">
                 <div class="card text-center p-3 shadow-sm h-100 border-primary">
                     <i class="fas fa-dollar-sign fa-2x text-primary mb-2"></i>
@@ -91,7 +91,7 @@ if (isset($_SESSION['error'])) {
     foreach ($dynamic_games as $game):
     ?>
     <div class="col-6">
-        <?php if ($user['user_level'] >= 2): ?>
+        <?php if (($user['user_level'] ?? 1) >= 2): ?>
             <a href="<?php echo htmlspecialchars($game['link'] ?? ''); ?>" class="text-decoration-none">
                 <div class="card text-center p-3 shadow-sm h-100">
                     <i class="<?php echo htmlspecialchars($game['icon_class'] ?? 'fas fa-gamepad'); ?> fa-2x text-danger mb-2"></i>
@@ -107,7 +107,7 @@ if (isset($_SESSION['error'])) {
     </div>
     <?php endforeach; ?>
     <div class="col-6">
-        <?php if ($user['user_level'] >= 2): ?>
+        <?php if (($user['user_level'] ?? 1) >= 2): ?>
             <a href="deposit.php" class="text-decoration-none">
                 <div class="card text-center p-3 shadow-sm h-100">
                     <i class="fas fa-plus-circle fa-2x text-info mb-2"></i>
@@ -122,7 +122,7 @@ if (isset($_SESSION['error'])) {
         <?php endif; ?>
     </div>
     <div class="col-6">
-        <?php if ($user['user_level'] >= 2): ?>
+        <?php if (($user['user_level'] ?? 1) >= 2): ?>
             <a href="aviator.php" class="text-decoration-none">
                 <div class="card text-center p-3 shadow-sm h-100 border-danger">
                     <i class="fas fa-plane-departure fa-2x text-danger mb-2"></i>
@@ -137,7 +137,7 @@ if (isset($_SESSION['error'])) {
         <?php endif; ?>
     </div>
     <div class="col-6">
-        <?php if ($user['user_level'] >= 2): ?>
+        <?php if (($user['user_level'] ?? 1) >= 2): ?>
             <a href="withdraw.php" class="text-decoration-none">
                 <div class="card text-center p-3 shadow-sm h-100">
                     <i class="fas fa-minus-circle fa-2x text-secondary mb-2"></i>
