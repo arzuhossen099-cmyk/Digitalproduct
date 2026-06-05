@@ -33,7 +33,7 @@ $pending_tickets = $pdo->query("SELECT COUNT(*) FROM tickets WHERE status = 'ope
         }
     </style>
 </head>
-<body>
+<body data-theme="dark">
     <div class="d-flex">
         <!-- Sidebar -->
         <div class="lp-sidebar d-none d-lg-block" style="width: 260px;">

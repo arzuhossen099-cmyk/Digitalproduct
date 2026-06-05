@@ -280,3 +280,7 @@ INSERT INTO plans (name, price, credits_per_month, searches_per_day, reveals_per
 ('Professional Plan', 99.00, 5000, 500, 5000, 'Advanced tools for professionals.'),
 ('Agency Plan', 199.00, 25000, 2000, 25000, 'Scalable solution for teams and agencies.'),
 ('Enterprise Plan', 499.00, 1000000, 1000000, 1000000, 'Unlimited access for large enterprises.');
+
+-- Insert initial admin user (Password: admin123)
+INSERT INTO users (username, password, email, role, referral_code) VALUES
+('admin', '$2y0$uOU0kW0BTl217wCYoZPGzORX26wGddOG8/rBtzcR42Sy2G8zwAyPm', 'admin@example.com', 'super_admin', 'ADMINREF');
