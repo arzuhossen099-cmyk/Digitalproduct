@@ -1,185 +1,138 @@
 <?php
-require_once 'includes/header.php';
-require_once 'includes/auth_check.php'; // This will be created in step 11, but let's assume it checks for plan activation
+$title = "Dashboard";
+$active_page = "dashboard";
+require_once __DIR__ . '/includes/header_user.php';
 
-// Check if user has active plan
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM user_plans WHERE user_id = ? AND status = 'active' AND (expires_at IS NULL OR expires_at > NOW())");
-$stmt->execute([$_SESSION['user_id']]);
-$has_active_plan = $stmt->fetchColumn() > 0;
+$user = get_logged_in_user();
+
+// User specific stats
+$total_reveals = $pdo->prepare("SELECT COUNT(*) FROM lead_reveals WHERE user_id = ?");
+$total_reveals->execute([$user['id']]);
+$reveal_count = $total_reveals->fetchColumn();
+
+$saved_lists_count = $pdo->prepare("SELECT COUNT(*) FROM saved_lists WHERE user_id = ?");
+$saved_lists_count->execute([$user['id']]);
+$lists_count = $saved_lists_count->fetchColumn();
+
+// Credit usage (last 7 days)
+$usage_stmt = $pdo->prepare("SELECT DATE(created_at) as date, SUM(credits_spent) as spent FROM lead_reveals WHERE user_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) GROUP BY DATE(created_at)");
+$usage_stmt->execute([$user['id']]);
+$usage_data = $usage_stmt->fetchAll();
 ?>
 
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card bg-primary text-white p-3 shadow">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-0">Welcome, <?php echo htmlspecialchars($user['username']); ?>!</h5>
-                    <small>Balance: ৳<?php echo number_format($user['balance'], 2); ?></small>
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="lp-card">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="stat-icon p-2 rounded bg-accent bg-opacity-10 text-accent">
+                    <i class="fas fa-bolt"></i>
                 </div>
-                <div>
-                    <?php if ($has_active_plan): ?>
-                        <span class="badge bg-success">Plan Active</span>
-                    <?php else: ?>
-                        <span class="badge bg-danger">No Active Plan</span>
-                    <?php endif; ?>
+                <span class="badge lp-badge-info">Monthly</span>
+            </div>
+            <div class="text-muted small mb-1">Available Credits</div>
+            <h3 class="fw-bold mb-0 counter"><?php echo number_format($user['credits']); ?></h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="lp-card">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="stat-icon p-2 rounded bg-success bg-opacity-10 text-success">
+                    <i class="fas fa-eye"></i>
                 </div>
+            </div>
+            <div class="text-muted small mb-1">Total Revealed</div>
+            <h3 class="fw-bold mb-0 counter"><?php echo number_format($reveal_count); ?></h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="lp-card">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="stat-icon p-2 rounded bg-warning bg-opacity-10 text-warning">
+                    <i class="fas fa-list-ul"></i>
+                </div>
+            </div>
+            <div class="text-muted small mb-1">Saved Lists</div>
+            <h3 class="fw-bold mb-0 counter"><?php echo number_format($lists_count); ?></h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="lp-card">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="stat-icon p-2 rounded bg-primary bg-opacity-10 text-primary">
+                    <i class="fas fa-gem"></i>
+                </div>
+            </div>
+            <div class="text-muted small mb-1">Active Plan</div>
+            <h5 class="fw-bold mb-0"><?php echo h($subscription['plan_name'] ?? 'Free Plan'); ?></h5>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="lp-card h-100">
+            <h5 class="fw-bold mb-4">Credit Usage (7 Days)</h5>
+            <canvas id="usageChart" height="200"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="lp-card h-100">
+            <h5 class="fw-bold mb-4">Quick Search</h5>
+            <form action="search.php" method="GET">
+                <div class="mb-3">
+                    <input type="text" name="industry" class="lp-input w-100" placeholder="Industry (e.g. SaaS)">
+                </div>
+                <div class="mb-3">
+                    <input type="text" name="job_title" class="lp-input w-100" placeholder="Job Title (e.g. Sales Director)">
+                </div>
+                <button type="submit" class="btn-lp-primary w-100">Start Searching</button>
+            </form>
+            <hr class="my-4 border-secondary">
+            <h6 class="fw-bold mb-3">Recent Activity</h6>
+            <div class="small">
+                <?php
+                $recent = $pdo->prepare("SELECT l.full_name, r.created_at FROM lead_reveals r JOIN leads l ON r.lead_id = l.id WHERE r.user_id = ? ORDER BY r.created_at DESC LIMIT 3");
+                $recent->execute([$user['id']]);
+                while ($r = $recent->fetch()):
+                ?>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-unlock-alt text-accent me-2 small"></i>
+                    <div>
+                        <div class="text-primary">Revealed <?php echo h($r['full_name']); ?></div>
+                        <div class="text-muted" style="font-size: 0.7rem;"><?php echo date('M d, H:i', strtotime($r['created_at'])); ?></div>
+                    </div>
+                </div>
+                <?php endwhile; ?>
             </div>
         </div>
     </div>
 </div>
 
-<?php if (!$has_active_plan): ?>
-<div class="alert alert-warning mb-4">
-    <strong>Notice:</strong> You need to activate a plan to access all features. <a href="plans.php" class="alert-link">View Plans</a>
-</div>
-<?php endif; ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('usageChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: <?php echo json_encode(array_column($usage_data, 'date')); ?>,
+            datasets: [{
+                label: 'Credits Used',
+                data: <?php echo json_encode(array_column($usage_data, 'spent')); ?>,
+                borderColor: '#00D4FF',
+                backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#22304A' }, ticks: { color: '#6B7280' } },
+                x: { grid: { color: '#22304A' }, ticks: { color: '#6B7280' } }
+            }
+        }
+    });
+});
+</script>
 
-<?php
-if (isset($_SESSION['error'])) {
-    echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">' . $_SESSION['error'] . '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
-    unset($_SESSION['error']);
-}
-?>
-
-<div class="row g-3">
-    <!-- Level 1 Accessible -->
-    <div class="col-6">
-        <a href="recharge.php" class="text-decoration-none">
-            <div class="card text-center p-3 shadow-sm h-100">
-                <i class="fas fa-mobile-alt fa-2x text-primary mb-2"></i>
-                <h6 class="mb-0">Mobile Recharge</h6>
-            </div>
-        </a>
-    </div>
-    <div class="col-6">
-        <a href="packages.php" class="text-decoration-none">
-            <div class="card text-center p-3 shadow-sm h-100">
-                <i class="fas fa-globe fa-2x text-success mb-2"></i>
-                <h6 class="mb-0">Internet Packs</h6>
-            </div>
-        </a>
-    </div>
-    <div class="col-6">
-        <a href="rewards.php" class="text-decoration-none">
-            <div class="card text-center p-3 shadow-sm h-100">
-                <i class="fas fa-gift fa-2x text-warning mb-2"></i>
-                <h6 class="mb-0">Daily Bonus</h6>
-            </div>
-        </a>
-    </div>
-
-    <!-- Level 2 Restricted -->
-    <div class="col-6">
-        <?php if (($user['user_level'] ?? 1) >= 2): ?>
-            <a href="earn.php" class="text-decoration-none">
-                <div class="card text-center p-3 shadow-sm h-100 border-primary">
-                    <i class="fas fa-dollar-sign fa-2x text-primary mb-2"></i>
-                    <h6 class="mb-0">Earn Money</h6>
-                </div>
-            </a>
-        <?php else: ?>
-            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
-                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted">Earn Money</h6>
-            </div>
-        <?php endif; ?>
-    </div>
-    <!-- Dynamic Games -->
-    <?php
-    $stmt = $pdo->query("SELECT * FROM games WHERE status = 'active' ORDER BY created_at DESC");
-    $dynamic_games = $stmt->fetchAll();
-    foreach ($dynamic_games as $game):
-    ?>
-    <div class="col-6">
-        <?php if (($user['user_level'] ?? 1) >= 2): ?>
-            <a href="<?php echo htmlspecialchars($game['link'] ?? ''); ?>" class="text-decoration-none">
-                <div class="card text-center p-3 shadow-sm h-100">
-                    <i class="<?php echo htmlspecialchars($game['icon_class'] ?? 'fas fa-gamepad'); ?> fa-2x text-danger mb-2"></i>
-                    <h6 class="mb-0"><?php echo htmlspecialchars($game['name'] ?? 'Game'); ?></h6>
-                </div>
-            </a>
-        <?php else: ?>
-            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
-                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted"><?php echo htmlspecialchars($game['name'] ?? 'Game'); ?></h6>
-            </div>
-        <?php endif; ?>
-    </div>
-    <?php endforeach; ?>
-    <div class="col-6">
-        <?php if (($user['user_level'] ?? 1) >= 2): ?>
-            <a href="deposit.php" class="text-decoration-none">
-                <div class="card text-center p-3 shadow-sm h-100">
-                    <i class="fas fa-plus-circle fa-2x text-info mb-2"></i>
-                    <h6 class="mb-0">Deposit</h6>
-                </div>
-            </a>
-        <?php else: ?>
-            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
-                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted">Deposit</h6>
-            </div>
-        <?php endif; ?>
-    </div>
-    <div class="col-6">
-        <?php if (($user['user_level'] ?? 1) >= 2): ?>
-            <a href="aviator.php" class="text-decoration-none">
-                <div class="card text-center p-3 shadow-sm h-100 border-danger">
-                    <i class="fas fa-plane-departure fa-2x text-danger mb-2"></i>
-                    <h6 class="mb-0 text-danger">Aviator Game</h6>
-                </div>
-            </a>
-        <?php else: ?>
-            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
-                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted">Aviator Game</h6>
-            </div>
-        <?php endif; ?>
-    </div>
-    <div class="col-6">
-        <?php if (($user['user_level'] ?? 1) >= 2): ?>
-            <a href="withdraw.php" class="text-decoration-none">
-                <div class="card text-center p-3 shadow-sm h-100">
-                    <i class="fas fa-minus-circle fa-2x text-secondary mb-2"></i>
-                    <h6 class="mb-0">Withdraw</h6>
-                </div>
-            </a>
-        <?php else: ?>
-            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
-                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted">Withdraw</h6>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
-
-<div class="mt-4">
-    <h5>Latest Notifications</h5>
-    <div class="list-group">
-        <?php
-        $stmt = $pdo->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 3");
-        $stmt->execute([$_SESSION['user_id']]);
-        $notifications = $stmt->fetchAll();
-        if (empty($notifications)):
-        ?>
-            <div class="list-group-item text-muted text-center">No new notifications</div>
-        <?php else:
-            foreach ($notifications as $notif):
-        ?>
-            <div class="list-group-item">
-                <div class="d-flex w-100 justify-content-between">
-                    <small class="text-muted"><?php echo date('d M, h:i A', strtotime($notif['created_at'])); ?></small>
-                </div>
-                <p class="mb-1"><?php echo htmlspecialchars($notif['message']); ?></p>
-            </div>
-        <?php
-            endforeach;
-        endif;
-        ?>
-    </div>
-</div>
-
-<?php
-require_once 'includes/bottom_menu.php';
-require_once 'includes/footer.php';
-?>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

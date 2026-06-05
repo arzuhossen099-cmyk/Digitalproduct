@@ -1,150 +1,139 @@
 <?php
-require_once 'header.php';
+$title = "Master Dashboard";
+$active_page = "dashboard";
+require_once __DIR__ . '/includes/header.php';
 
-if (isset($_POST['distribute_lb'])) {
-    require_once '../includes/reward_distributor.php';
-    $msg = distributeLeaderboardRewards($pdo);
-    echo "<div class='alert alert-info'>$msg</div>";
-}
+// SaaS Analytics
+$total_leads = $pdo->query("SELECT COUNT(*) FROM leads")->fetchColumn();
+$total_users = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'user'")->fetchColumn();
+$active_subscribers = $pdo->query("SELECT COUNT(DISTINCT user_id) FROM subscriptions WHERE status = 'active' AND (expires_at IS NULL OR expires_at > NOW())")->fetchColumn();
+$monthly_revenue = $pdo->query("SELECT SUM(amount) FROM payments WHERE status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)")->fetchColumn() ?: 0;
 
-$total_withdrawals = $pdo->query("SELECT SUM(amount) FROM withdrawals WHERE status = 'approved'")->fetchColumn() ?? 0;
-$total_earning_tasks = $pdo->query("SELECT SUM(amount) FROM reward_logs")->fetchColumn() ?? 0;
-$active_users_today = $pdo->query("SELECT COUNT(DISTINCT id) FROM users WHERE status = 'active'")->fetchColumn(); // Simplified
+// Earning Platform Analytics (Legacy Compatibility)
+$pending_deposits = $pdo->query("SELECT COUNT(*) FROM deposits WHERE status = 'pending'")->fetchColumn() ?: 0;
+$pending_withdrawals = $pdo->query("SELECT COUNT(*) FROM withdrawals WHERE status = 'pending'")->fetchColumn() ?: 0;
+$pending_tickets = $pdo->query("SELECT COUNT(*) FROM tickets WHERE status = 'open'")->fetchColumn() ?: 0;
+
+// Revenue data for chart
+$revenue_stmt = $pdo->query("SELECT DATE_FORMAT(created_at, '%b %d') as day, SUM(amount) as total FROM payments WHERE status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) GROUP BY DATE(created_at) ORDER BY created_at ASC");
+$revenue_data = $revenue_stmt->fetchAll();
 ?>
 
-<div class="row g-4 mb-5">
+<!-- KPI Row -->
+<div class="row g-4 mb-4">
     <div class="col-md-3">
-        <div class="card shadow-sm border-0 border-start border-primary border-4">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase small">Total Users</h6>
-                <h3 class="mb-0"><?php echo $total_users; ?></h3>
-            </div>
+        <div class="lp-card">
+            <div class="text-muted small mb-1">Total Database Leads</div>
+            <h3 class="fw-bold mb-0 text-accent"><?php echo number_format($total_leads); ?></h3>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card shadow-sm border-0 border-start border-success border-4">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase small">Net Deposits</h6>
-                <h3 class="mb-0">৳<?php echo number_format($total_deposits, 2); ?></h3>
-            </div>
+        <div class="lp-card">
+            <div class="text-muted small mb-1">Active Subscribers</div>
+            <h3 class="fw-bold mb-0"><?php echo number_format($active_subscribers); ?></h3>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card shadow-sm border-0 border-start border-info border-4">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase small">User Earnings</h6>
-                <h3 class="mb-0">৳<?php echo number_format($total_earning_tasks, 2); ?></h3>
-            </div>
+        <div class="lp-card text-success">
+            <div class="text-muted small mb-1">30-Day Revenue</div>
+            <h3 class="fw-bold mb-0"><?php echo format_currency($monthly_revenue); ?></h3>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card shadow-sm border-0 border-start border-danger border-4">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase small">Total Payouts</h6>
-                <h3 class="mb-0">৳<?php echo number_format($total_withdrawals, 2); ?></h3>
-            </div>
+        <div class="lp-card">
+            <div class="text-muted small mb-1">Total Users</div>
+            <h3 class="fw-bold mb-0"><?php echo number_format($total_users); ?></h3>
         </div>
+    </div>
+</div>
+
+<!-- Pending Actions Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <a href="deposits.php" class="text-decoration-none">
+            <div class="lp-card border-warning border-opacity-25 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-warning small fw-bold">Pending Deposits</div>
+                        <h2 class="fw-bold mb-0"><?php echo $pending_deposits; ?></h2>
+                    </div>
+                    <i class="fas fa-wallet fa-2x text-warning opacity-50"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="withdrawals.php" class="text-decoration-none">
+            <div class="lp-card border-danger border-opacity-25 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-danger small fw-bold">Pending Payouts</div>
+                        <h2 class="fw-bold mb-0"><?php echo $pending_withdrawals; ?></h2>
+                    </div>
+                    <i class="fas fa-money-bill-wave fa-2x text-danger opacity-50"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="tickets.php" class="text-decoration-none">
+            <div class="lp-card border-info border-opacity-25 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-info small fw-bold">Open Tickets</div>
+                        <h2 class="fw-bold mb-0"><?php echo $pending_tickets; ?></h2>
+                    </div>
+                    <i class="fas fa-headset fa-2x text-info opacity-50"></i>
+                </div>
+            </div>
+        </a>
     </div>
 </div>
 
 <div class="row g-4">
     <div class="col-md-8">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0">Pending Requests Overview</h5>
-            </div>
-            <div class="card-body">
-                <div class="row text-center g-4">
-                    <div class="col-4">
-                        <a href="deposits.php" class="text-decoration-none">
-                            <h2 class="text-warning"><?php echo $pending_deposits_count; ?></h2>
-                            <small class="text-muted">Deposits</small>
-                        </a>
-                    </div>
-                    <div class="col-4">
-                        <a href="withdrawals.php" class="text-decoration-none">
-                            <h2 class="text-danger"><?php echo $pending_withdrawals_count; ?></h2>
-                            <small class="text-muted">Withdrawals</small>
-                        </a>
-                    </div>
-                    <div class="col-4">
-                        <a href="task_submissions.php" class="text-decoration-none">
-                            <h2 class="text-info"><?php echo $pending_tasks_count; ?></h2>
-                            <small class="text-muted">Tasks</small>
-                        </a>
-                    </div>
-                </div>
-            </div>
+        <div class="lp-card">
+            <h5 class="fw-bold mb-4">Revenue Trend (Last 7 Days)</h5>
+            <canvas id="revTrendChart" height="250"></canvas>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0">System Status</h5>
-            </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between px-0">
-                        <span>Active Users</span>
-                        <span class="badge bg-success rounded-pill"><?php echo $active_users_today; ?></span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between px-0">
-                        <span>Pending Orders</span>
-                        <span class="badge bg-primary rounded-pill"><?php echo $pending_orders_count; ?></span>
-                    </li>
-                </ul>
-                <form method="POST" class="mt-3">
-                    <button type="submit" name="distribute_lb" class="btn btn-sm btn-outline-warning w-100">Distribute Leaderboard Rewards</button>
-                </form>
+        <div class="lp-card h-100">
+            <h5 class="fw-bold mb-4">Quick Actions</h5>
+            <div class="d-grid gap-2">
+                <a href="import_leads.php" class="btn btn-lp-primary"><i class="fas fa-upload me-2"></i> Import New Leads</a>
+                <a href="plans.php" class="btn btn-lp-outline"><i class="fas fa-box me-2"></i> Manage Subscription Plans</a>
+                <a href="users.php" class="btn btn-lp-outline"><i class="fas fa-users-cog me-2"></i> User Control Panel</a>
+                <a href="settings.php" class="btn btn-lp-outline"><i class="fas fa-cogs me-2"></i> Global System Settings</a>
             </div>
         </div>
     </div>
 </div>
 
-<div class="mt-5">
-    <h4>Recent Activity</h4>
-    <div class="table-responsive">
-        <table class="table table-hover bg-white shadow-sm rounded">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>User</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $recent = $pdo->query("
-                    (SELECT created_at, user_id, 'Deposit' as type, amount, status FROM deposits)
-                    UNION
-                    (SELECT created_at, user_id, 'Withdraw' as type, amount, status FROM withdrawals)
-                    ORDER BY created_at DESC LIMIT 10
-                ")->fetchAll();
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    new Chart(document.getElementById('revTrendChart'), {
+        type: 'line',
+        data: {
+            labels: <?php echo json_encode(array_column($revenue_data, 'day')); ?>,
+            datasets: [{
+                label: 'Revenue',
+                data: <?php echo json_encode(array_column($revenue_data, 'total')); ?>,
+                borderColor: '#00D4FF',
+                backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: '#22304A' }, ticks: { color: '#A3AED0' } },
+                x: { grid: { display: false }, ticks: { color: '#A3AED0' } }
+            }
+        }
+    });
+});
+</script>
 
-                foreach ($recent as $item):
-                    $u = $pdo->prepare("SELECT username FROM users WHERE id = ?");
-                    $u->execute([$item['user_id']]);
-                    $uname = $u->fetchColumn();
-                ?>
-                <tr>
-                    <td><?php echo date('d M, h:i A', strtotime($item['created_at'])); ?></td>
-                    <td><?php echo htmlspecialchars($uname); ?></td>
-                    <td><?php echo $item['type']; ?></td>
-                    <td>৳<?php echo number_format($item['amount'], 2); ?></td>
-                    <td>
-                        <span class="badge bg-<?php
-                            echo $item['status'] == 'pending' ? 'warning' : ($item['status'] == 'approved' ? 'success' : 'danger');
-                        ?>"><?php echo ucfirst($item['status']); ?></span>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<?php
-require_once 'footer.php';
-?>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

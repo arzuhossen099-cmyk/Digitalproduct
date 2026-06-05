@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$db   = 'telecom_db';
+$db   = 'leadpress_db';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
@@ -15,8 +15,7 @@ $options = [
 try {
      $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
-     // For development, we can show the error. In production, log it.
-     // die($e->getMessage());
-     die("Database connection failed.");
+     // In production, log error and show generic message
+     die("Database connection failed. Please ensure the database 'leadpress_db' exists and credentials are correct.");
 }
 ?>
