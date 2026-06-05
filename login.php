@@ -23,16 +23,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Your account is ' . $user['status'] . '. Please contact support.';
             } else {
                 $_SESSION['user_id'] = $user['id'];
-                $_SESSION['role'] = $user['role'];
+                $_SESSION['role'] = $user['role'] ?? 'user';
                 $_SESSION['username'] = $user['username'];
+
+                // Set legacy admin flag for compatibility
+                $is_admin = ($user['role'] === 'super_admin' || $user['role'] === 'admin' || ($user['is_admin'] ?? 0) == 1);
+                if ($is_admin) {
+                    $_SESSION['role'] = $_SESSION['role'] === 'user' ? 'admin' : $_SESSION['role'];
+                }
 
                 lp_log("User logged in: " . $user['email']);
 
-                if ($user['role'] === 'super_admin' || $user['role'] === 'admin') {
-                    redirect('admin/dashboard.php');
+                if ($is_admin) {
+                    header("Location: admin/dashboard.php");
                 } else {
-                    redirect('index.php');
+                    header("Location: index.php");
                 }
+                exit();
             }
         } else {
             $error = 'Invalid email or password.';

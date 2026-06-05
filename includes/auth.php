@@ -21,21 +21,28 @@ function get_logged_in_user() {
 
 function require_login() {
     if (!is_logged_in()) {
-        redirect('login.php');
+        $path = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) ? '../login.php' : 'login.php';
+        header("Location: $path");
+        exit();
     }
 }
 
 function require_admin() {
     $user = get_logged_in_user();
-    if (!$user || ($user['role'] !== 'admin' && $user['role'] !== 'super_admin')) {
-        redirect('index.php');
+    $is_admin = $user && (($user['role'] ?? '') === 'admin' || ($user['role'] ?? '') === 'super_admin' || ($user['is_admin'] ?? 0) == 1);
+    if (!$is_admin) {
+        $path = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) ? '../index.php' : 'index.php';
+        header("Location: $path");
+        exit();
     }
 }
 
 function require_super_admin() {
     $user = get_logged_in_user();
-    if (!$user || $user['role'] !== 'super_admin') {
-        redirect('admin/dashboard.php');
+    if (!$user || ($user['role'] ?? '') !== 'super_admin') {
+        $path = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) ? 'dashboard.php' : 'admin/dashboard.php';
+        header("Location: $path");
+        exit();
     }
 }
 

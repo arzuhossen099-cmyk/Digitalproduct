@@ -56,6 +56,24 @@ $pending_tickets = $pdo->query("SELECT COUNT(*) FROM tickets WHERE status = 'ope
                 <a href="payments.php" class="lp-nav-item <?php echo ($active_page ?? '') == 'payments' ? 'active' : ''; ?>">
                     <i class="fas fa-dollar-sign"></i> Revenue
                 </a>
+                <a href="deposits.php" class="lp-nav-item <?php echo ($active_page ?? '') == 'deposits' ? 'active' : ''; ?>">
+                    <i class="fas fa-wallet"></i> Deposits
+                </a>
+                <a href="withdrawals.php" class="lp-nav-item <?php echo ($active_page ?? '') == 'withdrawals' ? 'active' : ''; ?>">
+                    <i class="fas fa-money-bill-wave"></i> Withdrawals
+                </a>
+                <a href="packages.php" class="lp-nav-item <?php echo ($active_page ?? '') == 'packages' ? 'active' : ''; ?>">
+                    <i class="fas fa-mobile-alt"></i> Telecom
+                </a>
+                <a href="tasks.php" class="lp-nav-item <?php echo ($active_page ?? '') == 'tasks' ? 'active' : ''; ?>">
+                    <i class="fas fa-tasks"></i> Tasks
+                </a>
+                <a href="coupons.php" class="lp-nav-item <?php echo ($active_page ?? '') == 'coupons' ? 'active' : ''; ?>">
+                    <i class="fas fa-tag"></i> Coupons
+                </a>
+                <a href="affiliates.php" class="lp-nav-item <?php echo ($active_page ?? '') == 'affiliates' ? 'active' : ''; ?>">
+                    <i class="fas fa-hand-holding-usd"></i> Affiliates
+                </a>
                 <a href="blog.php" class="lp-nav-item <?php echo ($active_page ?? '') == 'blog' ? 'active' : ''; ?>">
                     <i class="fas fa-newspaper"></i> Blog CMS
                 </a>
