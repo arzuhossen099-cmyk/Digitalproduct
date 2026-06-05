@@ -25,6 +25,21 @@ require_once __DIR__ . '/includes/header_user.php';
                     <label class="form-label text-muted small">Location</label>
                     <input type="text" name="country" class="lp-input w-100" placeholder="e.g. USA">
                 </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Seniority</label>
+                    <select name="seniority" class="lp-input w-100">
+                        <option value="">Any</option>
+                        <option value="Entry">Entry</option>
+                        <option value="Senior">Senior</option>
+                        <option value="Director">Director</option>
+                        <option value="VP">VP</option>
+                        <option value="C-Level">C-Level</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Technology</label>
+                    <input type="text" name="technology_stack" class="lp-input w-100" placeholder="e.g. React, PHP">
+                </div>
                 <button type="submit" class="btn-lp-primary w-100 mt-2">Apply Filters</button>
                 <button type="reset" class="btn-lp-outline w-100 mt-2">Clear Filters</button>
             </form>

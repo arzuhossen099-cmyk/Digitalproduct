@@ -253,6 +253,16 @@ CREATE TABLE IF NOT EXISTS settings (
     category VARCHAR(50) DEFAULT 'general'
 );
 
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    action VARCHAR(255) NOT NULL,
+    details TEXT,
+    ip_address VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- Default Settings
 INSERT INTO settings (setting_key, setting_value, category) VALUES
 ('site_name', 'LeadPress', 'general'),

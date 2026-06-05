@@ -97,6 +97,9 @@ $subscription = $stmt->fetch();
                     </div>
 
                     <div class="d-flex align-items-center">
+                        <button class="btn btn-lp-outline btn-sm me-3 border-0" onclick="toggleTheme()" id="themeToggle">
+                            <i class="fas fa-moon"></i>
+                        </button>
                         <div class="me-3 text-end d-none d-sm-block">
                             <div class="small fw-bold">Credits: <span class="text-accent"><?php echo number_format($user['credits']); ?></span></div>
                             <div class="text-muted small" style="font-size: 0.7rem;"><?php echo h($subscription['plan_name'] ?? 'No Plan'); ?></div>

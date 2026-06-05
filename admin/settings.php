@@ -10,6 +10,7 @@ if (isset($_POST['update_settings'])) {
         foreach ($_POST['settings'] as $key => $value) {
             $stmt = $pdo->prepare("UPDATE settings SET setting_value = ? WHERE setting_key = ?");
             $stmt->execute([$value, $key]);
+            audit_log("Update Setting", "Key: $key, Value: $value");
         }
         $success = "Settings updated successfully!";
     }

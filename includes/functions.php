@@ -65,4 +65,12 @@ function lp_log($message, $level = 'INFO') {
     $timestamp = date('Y-m-d H:i:s');
     file_put_contents($log_file, "[$timestamp] [$level] $message" . PHP_EOL, FILE_APPEND);
 }
+
+function audit_log($action, $details = null) {
+    global $pdo;
+    $user_id = $_SESSION['user_id'] ?? null;
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $stmt = $pdo->prepare("INSERT INTO audit_logs (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$user_id, $action, $details, $ip]);
+}
 ?>

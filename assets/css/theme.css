@@ -12,6 +12,25 @@
     --text-muted: #6B7280;
 
     --accent-primary: #00D4FF;
+}
+
+[data-theme="light"] {
+    --bg-primary: #F3F4F6;
+    --bg-secondary: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-hover: #F9FAFB;
+    --border-color: #E5E7EB;
+
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+    --text-muted: #6B7280;
+
+    --accent-primary: #0284C7;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(229, 231, 235, 0.5);
+}
+
+:root {
     --accent-secondary: #7C3AED;
     --success: #22C55E;
     --warning: #F59E0B;

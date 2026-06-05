@@ -6,6 +6,9 @@ $industry = $_GET['industry'] ?? '';
 $country = $_GET['country'] ?? '';
 $job_title = $_GET['job_title'] ?? '';
 $company = $_GET['company'] ?? '';
+$seniority = $_GET['seniority'] ?? '';
+$tech = $_GET['technology_stack'] ?? '';
+$email_status = $_GET['verification_status'] ?? '';
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 20;
 $offset = ($page - 1) * $limit;
@@ -17,6 +20,9 @@ if ($industry) { $where .= " AND industry LIKE ?"; $params[] = "%$industry%"; }
 if ($country) { $where .= " AND country LIKE ?"; $params[] = "%$country%"; }
 if ($job_title) { $where .= " AND job_title LIKE ?"; $params[] = "%$job_title%"; }
 if ($company) { $where .= " AND company_name LIKE ?"; $params[] = "%$company%"; }
+if ($seniority) { $where .= " AND seniority = ?"; $params[] = $seniority; }
+if ($tech) { $where .= " AND technology_stack LIKE ?"; $params[] = "%$tech%"; }
+if ($email_status) { $where .= " AND verification_status = ?"; $params[] = $email_status; }
 
 // Reveal tracking: Check which leads are already revealed by the user
 $stmt = $pdo->prepare("SELECT lead_id FROM lead_reveals WHERE user_id = ?");

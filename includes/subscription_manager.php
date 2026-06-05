@@ -10,7 +10,7 @@ class SubscriptionManager {
         $this->pdo = $pdo;
     }
 
-    public function activatePlan($user_id, $plan_id) {
+    public function activatePlan($user_id, $plan_id, $is_yearly = false) {
         $stmt = $this->pdo->prepare("SELECT * FROM plans WHERE id = ? AND is_active = 1");
         $stmt->execute([$plan_id]);
         $plan = $stmt->fetch();
@@ -25,7 +25,8 @@ class SubscriptionManager {
             $stmt->execute([$user_id]);
 
             // Create new subscription
-            $expires_at = date('Y-m-d H:i:s', strtotime("+{$plan['duration_days']} days"));
+            $duration = $is_yearly ? 365 : $plan['duration_days'];
+            $expires_at = date('Y-m-d H:i:s', strtotime("+{$duration} days"));
             $stmt = $this->pdo->prepare("INSERT INTO subscriptions (user_id, plan_id, status, starts_at, expires_at) VALUES (?, ?, 'active', NOW(), ?)");
             $stmt->execute([$user_id, $plan_id, $expires_at]);
 
