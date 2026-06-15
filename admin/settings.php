@@ -1,45 +1,50 @@
 <?php
-require_once 'header.php';
+require_once __DIR__ . '/../includes/init.php';
+require_once __DIR__ . '/header.php';
 
-if (isset($_POST['update_settings'])) {
+$message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token($_POST['csrf_token'])) {
+        die("CSRF token validation failed.");
+    }
+
     foreach ($_POST['settings'] as $key => $value) {
-        $stmt = $pdo->prepare("UPDATE settings SET setting_value = ? WHERE setting_key = ?");
-        $stmt->execute([$value, $key]);
+        $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+        $stmt->execute([$key, $value, $value]);
     }
-    echo "<div class='alert alert-success'>Settings updated!</div>";
-    // Refresh settings
-    $stmt = $pdo->query("SELECT * FROM settings");
-    $settings = [];
-    while ($row = $stmt->fetch()) {
-        $settings[$row['setting_key']] = $row['setting_value'];
-    }
+    $message = "Settings updated successfully!";
 }
 
+$site_name = get_setting($pdo, 'site_name', 'PLAYPULSE');
+$contact_email = get_setting($pdo, 'contact_email', 'admin@playpulse.com');
+$facebook_url = get_setting($pdo, 'facebook_url', '#');
 ?>
 
-<div class="card shadow-sm col-md-6">
-    <div class="card-body">
-        <h5 class="card-title mb-4">Website Settings</h5>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">General Settings</h2>
+</div>
+
+<?php if ($message): ?><div class="alert alert-success"><?php echo h($message); ?></div><?php endif; ?>
+
+<div class="card shadow admin-card">
+    <div class="card-body p-4">
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
             <div class="mb-3">
                 <label class="form-label">Site Name</label>
-                <input type="text" name="settings[site_name]" class="form-control" value="<?php echo htmlspecialchars($settings['site_name'] ?? ''); ?>">
+                <input type="text" name="settings[site_name]" class="form-control bg-dark text-white border-secondary" value="<?php echo h($site_name); ?>">
             </div>
             <div class="mb-3">
-                <label class="form-label">bKash Number</label>
-                <input type="text" name="settings[bkash_number]" class="form-control" value="<?php echo htmlspecialchars($settings['bkash_number'] ?? ''); ?>">
+                <label class="form-label">Contact Email</label>
+                <input type="email" name="settings[contact_email]" class="form-control bg-dark text-white border-secondary" value="<?php echo h($contact_email); ?>">
             </div>
             <div class="mb-3">
-                <label class="form-label">Nagad Number</label>
-                <input type="text" name="settings[nagad_number]" class="form-control" value="<?php echo htmlspecialchars($settings['nagad_number'] ?? ''); ?>">
+                <label class="form-label">Facebook URL</label>
+                <input type="text" name="settings[facebook_url]" class="form-control bg-dark text-white border-secondary" value="<?php echo h($facebook_url); ?>">
             </div>
-            <div class="mb-3">
-                <label class="form-label">Rocket Number</label>
-                <input type="text" name="settings[rocket_number]" class="form-control" value="<?php echo htmlspecialchars($settings['rocket_number'] ?? ''); ?>">
-            </div>
-            <button type="submit" name="update_settings" class="btn btn-primary">Save Settings</button>
+            <button type="submit" class="btn btn-yellow">Save Settings</button>
         </form>
     </div>
 </div>
 
-<?php require_once 'footer.php'; ?>
+<?php require_once __DIR__ . '/footer.php'; ?>

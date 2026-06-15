@@ -1,67 +1,55 @@
 <?php
-session_start();
-require_once __DIR__ . '/../config/db.php';
-
-if (!isset($_SESSION['user_id']) || !$_SESSION['is_admin']) {
-    header("Location: login.php");
-    exit();
+if (!is_admin_logged_in()) {
+    redirect('login.php');
 }
-
-// Global stats for admin
-$total_users = $pdo->query("SELECT COUNT(*) FROM users WHERE is_admin = 0")->fetchColumn();
-$total_deposits = $pdo->query("SELECT SUM(amount) FROM deposits WHERE status = 'approved'")->fetchColumn() ?? 0;
-$pending_deposits_count = $pdo->query("SELECT COUNT(*) FROM deposits WHERE status = 'pending'")->fetchColumn();
-$pending_withdrawals_count = $pdo->query("SELECT COUNT(*) FROM withdrawals WHERE status = 'pending'")->fetchColumn();
-$pending_tasks_count = $pdo->query("SELECT COUNT(*) FROM task_submissions WHERE status = 'pending'")->fetchColumn();
-$pending_orders_count = $pdo->query("SELECT COUNT(*) FROM package_orders WHERE status = 'pending'")->fetchColumn();
-
-// Site settings
-$stmt = $pdo->query("SELECT * FROM settings");
-$settings = [];
-while ($row = $stmt->fetch()) {
-    $settings[$row['setting_key']] = $row['setting_value'];
-}
-$site_name = $settings['site_name'] ?? 'Admin Panel';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $site_name; ?> - Dashboard</title>
+    <title>Admin Dashboard - PLAYPULSE</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { display: flex; min-height: 100vh; }
-        .sidebar { width: 250px; background: #343a40; color: white; }
-        .sidebar a { color: rgba(255,255,255,0.8); text-decoration: none; padding: 15px 20px; display: block; }
-        .sidebar a:hover, .sidebar a.active { background: #495057; color: white; }
-        .content { flex: 1; padding: 20px; background: #f8f9fa; }
+        :root {
+            --sidebar-bg: #111A2E;
+            --main-bg: #0B1220;
+            --card-bg: #16213A;
+            --accent: #FFC107;
+        }
+        body { background-color: var(--main-bg); color: #fff; font-family: 'Inter', sans-serif; }
+        .sidebar { min-height: 100vh; background: var(--sidebar-bg); border-right: 1px solid rgba(255,255,255,0.1); }
+        .sidebar .nav-link { color: #adb5bd; padding: 12px 20px; font-weight: 500; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: var(--accent); background: rgba(255,193,7,0.1); }
+        .admin-card { background: var(--card-bg); border: none; border-radius: 12px; }
+        .stat-value { font-size: 2rem; font-weight: 800; }
+        .stat-label { color: #adb5bd; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h4 class="text-center py-4 border-bottom"><?php echo $site_name; ?></h4>
-        <a href="index.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a>
-        <a href="users.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'users.php' ? 'active' : ''; ?>"><i class="fas fa-users me-2"></i> Users</a>
-        <a href="deposits.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'deposits.php' ? 'active' : ''; ?>"><i class="fas fa-wallet me-2"></i> Deposits <?php if($pending_deposits_count > 0) echo "<span class='badge bg-danger'>$pending_deposits_count</span>"; ?></a>
-        <a href="withdrawals.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'withdrawals.php' ? 'active' : ''; ?>"><i class="fas fa-money-bill-wave me-2"></i> Withdrawals <?php if($pending_withdrawals_count > 0) echo "<span class='badge bg-danger'>$pending_withdrawals_count</span>"; ?></a>
-        <a href="manage_rewards.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_rewards.php' ? 'active' : ''; ?>"><i class="fas fa-gift me-2"></i> Manage Rewards</a>
-        <a href="give_reward.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'give_reward.php' ? 'active' : ''; ?>"><i class="fas fa-hand-holding-usd me-2"></i> Give Reward</a>
-        <a href="reward_logs.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'reward_logs.php' ? 'active' : ''; ?>"><i class="fas fa-list me-2"></i> Reward Logs</a>
-        <a href="package_orders.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'package_orders.php' ? 'active' : ''; ?>"><i class="fas fa-shopping-cart me-2"></i> Package Orders <?php if($pending_orders_count > 0) echo "<span class='badge bg-danger'>$pending_orders_count</span>"; ?></a>
-        <a href="manage_tasks.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_tasks.php' ? 'active' : ''; ?>"><i class="fas fa-tasks me-2"></i> Social Tasks</a>
-        <a href="task_submissions.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'task_submissions.php' ? 'active' : ''; ?>"><i class="fas fa-check-double me-2"></i> Submissions <?php if($pending_tasks_count > 0) echo "<span class='badge bg-danger'>$pending_tasks_count</span>"; ?></a>
-        <a href="manage_ads.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_ads.php' ? 'active' : ''; ?>"><i class="fas fa-ad me-2"></i> Manage Ads</a>
-        <a href="games.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'games.php' ? 'active' : ''; ?>"><i class="fas fa-gamepad me-2"></i> Manage Games</a>
-        <a href="plans.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'plans.php' ? 'active' : ''; ?>"><i class="fas fa-box me-2"></i> Plans</a>
-        <a href="packages.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'packages.php' ? 'active' : ''; ?>"><i class="fas fa-mobile-alt me-2"></i> Telecom Packs</a>
-        <a href="payment_settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'payment_settings.php' ? 'active' : ''; ?>"><i class="fas fa-credit-card me-2"></i> Payment Settings</a>
-        <a href="settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>"><i class="fas fa-cog me-2"></i> Settings</a>
-        <a href="../logout.php"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
-    </div>
-    <div class="content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Dashboard</h2>
-            <div>Welcome, Admin</div>
-        </div>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-0">
+            <div class="position-sticky pt-3">
+                <div class="px-4 mb-4">
+                    <h5 class="fw-bold text-white"><i class="fas fa-play-circle text-danger me-2"></i> PLAYPULSE</h5>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link active" href="index.php"><i class="fas fa-th-large me-2"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="articles.php"><i class="fas fa-newspaper me-2"></i> News</a></li>
+                    <li class="nav-item"><a class="nav-link" href="matches.php"><i class="fas fa-satellite-dish me-2"></i> Live Scores</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-video me-2"></i> Videos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="categories.php"><i class="fas fa-list me-2"></i> Categories</a></li>
+                    <li class="nav-item"><a class="nav-link" href="settings.php"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-users me-2"></i> Users</a></li>
+                    <hr class="border-secondary mx-3">
+                    <li class="nav-item"><a class="nav-link text-danger" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
