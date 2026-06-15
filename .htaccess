@@ -1,0 +1,22 @@
+RewriteEngine On
+
+# Redirect to index.php if file/dir not found
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# SEO Friendly News URLs
+RewriteRule ^news/([^/]+)$ news/index.php?slug=$1 [L,QSA]
+
+# SEO Friendly Category URLs
+RewriteRule ^category/([^/]+)$ category/index.php?slug=$1 [L,QSA]
+
+# SEO Friendly Match Center
+RewriteRule ^match-center$ match-center/index.php [L,QSA]
+
+# SEO Friendly Where to Watch
+RewriteRule ^where-to-watch$ where-to-watch/index.php [L,QSA]
+
+# Gzip Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript
+</IfModule>

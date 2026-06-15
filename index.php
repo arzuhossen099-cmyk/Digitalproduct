@@ -1,185 +1,148 @@
 <?php
-require_once 'includes/header.php';
-require_once 'includes/auth_check.php'; // This will be created in step 11, but let's assume it checks for plan activation
+require_once __DIR__ . '/includes/header.php';
 
-// Check if user has active plan
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM user_plans WHERE user_id = ? AND status = 'active' AND (expires_at IS NULL OR expires_at > NOW())");
-$stmt->execute([$_SESSION['user_id']]);
-$has_active_plan = $stmt->fetchColumn() > 0;
+// Fetch Trending Ticker
+$trending_news = $pdo->query("SELECT title_en, slug FROM articles WHERE is_trending = 1 AND status = 'published' LIMIT 5")->fetchAll();
+
+// Fetch Live Scores
+$live_matches = $pdo->query("SELECT m.*, t1.name_en as t1_en, t2.name_en as t2_en, t1.logo as t1_logo, t2.logo as t2_logo, t1.short_name as t1_short, t2.short_name as t2_short
+                            FROM matches m
+                            JOIN teams t1 ON m.team1_id = t1.id
+                            JOIN teams t2 ON m.team2_id = t2.id
+                            WHERE m.status = 'live' LIMIT 4")->fetchAll();
+
+// Fetch Latest News
+$latest_news = $pdo->query("SELECT * FROM articles WHERE status = 'published' ORDER BY published_at DESC LIMIT 4")->fetchAll();
+
+// Fetch Categories for "Explore All Sports"
+$sports_cats = $pdo->query("SELECT * FROM categories WHERE status = 'active' LIMIT 6")->fetchAll();
 ?>
 
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card bg-primary text-white p-3 shadow">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-0">Welcome, <?php echo htmlspecialchars($user['username']); ?>!</h5>
-                    <small>Balance: ৳<?php echo number_format($user['balance'], 2); ?></small>
-                </div>
-                <div>
-                    <?php if ($has_active_plan): ?>
-                        <span class="badge bg-success">Plan Active</span>
-                    <?php else: ?>
-                        <span class="badge bg-danger">No Active Plan</span>
-                    <?php endif; ?>
-                </div>
-            </div>
+<!-- Hero Section -->
+<section class="hero-section text-center">
+    <div class="container position-relative z-1">
+        <h1 class="hero-title text-white mb-4">EVERY GAME.<br>EVERY MOMENT.<br>ALL SPORTS.</h1>
+        <p class="fs-5 text-light mb-5 max-width-700 mx-auto">Breaking news, live scores, stats and streaming guides. Your ultimate destination for everything in the world of sports.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="/match-center/index.php" class="btn btn-yellow"><i class="fas fa-bolt me-2"></i> LIVE SCORES</a>
+            <a href="/where-to-watch/index.php" class="btn btn-outline-white"><i class="fas fa-play me-2"></i> WATCH NOW</a>
+        </div>
+    </div>
+</section>
+
+<!-- Trending Ticker -->
+<div class="trending-ticker">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            <span class="text-yellow fw-bold me-4 text-nowrap" style="color: var(--accent-yellow)">TRENDING NOW</span>
+            <marquee behavior="scroll" direction="left" class="small">
+                <?php foreach ($trending_news as $tn): ?>
+                    <a href="/news/index.php?slug=<?php echo $tn['slug']; ?>" class="text-white text-decoration-none me-5">• <?php echo h($tn['title_en']); ?></a>
+                <?php endforeach; ?>
+            </marquee>
         </div>
     </div>
 </div>
 
-<?php if (!$has_active_plan): ?>
-<div class="alert alert-warning mb-4">
-    <strong>Notice:</strong> You need to activate a plan to access all features. <a href="plans.php" class="alert-link">View Plans</a>
-</div>
-<?php endif; ?>
+<!-- Live Scores -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="section-title mb-0">LIVE SCORES <span class="text-danger">• LIVE</span></h3>
+            <a href="/match-center/index.php" class="text-muted text-decoration-none small">VIEW ALL SCORES <i class="fas fa-chevron-right ms-1"></i></a>
+        </div>
+        <div class="row g-4">
+            <?php foreach ($live_matches as $lm): ?>
+            <div class="col-lg-3 col-md-6">
+                <div class="live-score-card">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="small text-muted"><?php echo h($lm['tournament_name']); ?></span>
+                        <span class="score-badge">LIVE</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="text-center">
+                            <img loading="lazy" src="/uploads/<?php echo $lm['t1_logo']; ?>" width="40" class="mb-2">
+                            <div class="fw-bold small"><?php echo h($lm['t1_short']); ?></div>
+                        </div>
+                        <div class="fs-3 fw-900"><?php echo $lm['team1_score']; ?> - <?php echo $lm['team2_score']; ?></div>
+                        <div class="text-center">
+                            <img loading="lazy" src="/uploads/<?php echo $lm['t2_logo']; ?>" width="40" class="mb-2">
+                            <div class="fw-bold small"><?php echo h($lm['t2_short']); ?></div>
+                        </div>
+                    </div>
+                    <div class="text-center text-danger small fw-bold">82'</div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
 
-<?php
-if (isset($_SESSION['error'])) {
-    echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">' . $_SESSION['error'] . '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
-    unset($_SESSION['error']);
-}
-?>
+<!-- Breaking News -->
+<section class="py-5 bg-secondary">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="section-title mb-0">BREAKING NEWS</h3>
+            <a href="/news/index.php" class="text-muted text-decoration-none small">VIEW ALL NEWS <i class="fas fa-chevron-right ms-1"></i></a>
+        </div>
+        <div class="row g-4">
+            <?php foreach ($latest_news as $art): ?>
+            <div class="col-lg-3 col-md-6">
+                <div class="news-card">
+                    <div class="position-relative">
+                        <img loading="lazy" src="/uploads/<?php echo $art['featured_image']; ?>" alt="">
+                        <span class="badge bg-danger position-absolute top-0 start-0 m-3">BREAKING</span>
+                    </div>
+                    <div class="text-muted small mt-2"><?php echo h($art['status']); ?> • 5m ago</div>
+                    <h5 class="card-title">
+                        <a href="/news/index.php?slug=<?php echo $art['slug']; ?>" class="text-white text-decoration-none">
+                            <?php echo h($art['title_en']); ?>
+                        </a>
+                    </h5>
+                    <p class="text-muted small">Late goals seal a thrilling comeback in London.</p>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
 
-<div class="row g-3">
-    <!-- Level 1 Accessible -->
-    <div class="col-6">
-        <a href="recharge.php" class="text-decoration-none">
-            <div class="card text-center p-3 shadow-sm h-100">
-                <i class="fas fa-mobile-alt fa-2x text-primary mb-2"></i>
-                <h6 class="mb-0">Mobile Recharge</h6>
+<!-- Explore Sports -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="section-title mb-0">EXPLORE ALL SPORTS</h3>
+            <a href="#" class="text-muted text-decoration-none small">VIEW ALL SPORTS <i class="fas fa-chevron-right ms-1"></i></a>
+        </div>
+        <div class="row g-4">
+            <?php foreach ($sports_cats as $sc): ?>
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="sport-icon-box">
+                    <i class="<?php echo h($sc['icon'] ?: 'fas fa-futbol'); ?> fa-3x mb-3 text-white"></i>
+                    <div class="fw-bold small text-uppercase"><?php echo h($sc['name_en']); ?></div>
+                </div>
             </div>
-        </a>
-    </div>
-    <div class="col-6">
-        <a href="packages.php" class="text-decoration-none">
-            <div class="card text-center p-3 shadow-sm h-100">
-                <i class="fas fa-globe fa-2x text-success mb-2"></i>
-                <h6 class="mb-0">Internet Packs</h6>
+            <?php endforeach; ?>
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="sport-icon-box">
+                    <i class="fas fa-th-large fa-3x mb-3 text-white"></i>
+                    <div class="fw-bold small text-uppercase">MORE SPORTS</div>
+                </div>
             </div>
-        </a>
+        </div>
     </div>
-    <div class="col-6">
-        <a href="rewards.php" class="text-decoration-none">
-            <div class="card text-center p-3 shadow-sm h-100">
-                <i class="fas fa-gift fa-2x text-warning mb-2"></i>
-                <h6 class="mb-0">Daily Bonus</h6>
-            </div>
-        </a>
-    </div>
+</section>
 
-    <!-- Level 2 Restricted -->
-    <div class="col-6">
-        <?php if (($user['user_level'] ?? 1) >= 2): ?>
-            <a href="earn.php" class="text-decoration-none">
-                <div class="card text-center p-3 shadow-sm h-100 border-primary">
-                    <i class="fas fa-dollar-sign fa-2x text-primary mb-2"></i>
-                    <h6 class="mb-0">Earn Money</h6>
-                </div>
-            </a>
-        <?php else: ?>
-            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
-                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted">Earn Money</h6>
-            </div>
-        <?php endif; ?>
+<!-- Streaming Guides Section -->
+<section class="py-5 bg-secondary">
+    <div class="container text-center mb-5">
+        <h2 class="hero-title fs-2">NOW IN <span class="text-yellow" style="color: var(--accent-yellow)">ENGLISH</span> & <span class="text-success" style="color: #00FF88">BANGLA</span></h2>
+        <p class="text-muted">Read news in your language. Stay updated, stay connected.</p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="?lang=en" class="btn btn-yellow px-4">ENGLISH</a>
+            <a href="?lang=bn" class="btn btn-success px-4" style="background-color: #00D166; border: none;">বাংলা</a>
+        </div>
     </div>
-    <!-- Dynamic Games -->
-    <?php
-    $stmt = $pdo->query("SELECT * FROM games WHERE status = 'active' ORDER BY created_at DESC");
-    $dynamic_games = $stmt->fetchAll();
-    foreach ($dynamic_games as $game):
-    ?>
-    <div class="col-6">
-        <?php if (($user['user_level'] ?? 1) >= 2): ?>
-            <a href="<?php echo htmlspecialchars($game['link'] ?? ''); ?>" class="text-decoration-none">
-                <div class="card text-center p-3 shadow-sm h-100">
-                    <i class="<?php echo htmlspecialchars($game['icon_class'] ?? 'fas fa-gamepad'); ?> fa-2x text-danger mb-2"></i>
-                    <h6 class="mb-0"><?php echo htmlspecialchars($game['name'] ?? 'Game'); ?></h6>
-                </div>
-            </a>
-        <?php else: ?>
-            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
-                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted"><?php echo htmlspecialchars($game['name'] ?? 'Game'); ?></h6>
-            </div>
-        <?php endif; ?>
-    </div>
-    <?php endforeach; ?>
-    <div class="col-6">
-        <?php if (($user['user_level'] ?? 1) >= 2): ?>
-            <a href="deposit.php" class="text-decoration-none">
-                <div class="card text-center p-3 shadow-sm h-100">
-                    <i class="fas fa-plus-circle fa-2x text-info mb-2"></i>
-                    <h6 class="mb-0">Deposit</h6>
-                </div>
-            </a>
-        <?php else: ?>
-            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
-                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted">Deposit</h6>
-            </div>
-        <?php endif; ?>
-    </div>
-    <div class="col-6">
-        <?php if (($user['user_level'] ?? 1) >= 2): ?>
-            <a href="aviator.php" class="text-decoration-none">
-                <div class="card text-center p-3 shadow-sm h-100 border-danger">
-                    <i class="fas fa-plane-departure fa-2x text-danger mb-2"></i>
-                    <h6 class="mb-0 text-danger">Aviator Game</h6>
-                </div>
-            </a>
-        <?php else: ?>
-            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
-                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted">Aviator Game</h6>
-            </div>
-        <?php endif; ?>
-    </div>
-    <div class="col-6">
-        <?php if (($user['user_level'] ?? 1) >= 2): ?>
-            <a href="withdraw.php" class="text-decoration-none">
-                <div class="card text-center p-3 shadow-sm h-100">
-                    <i class="fas fa-minus-circle fa-2x text-secondary mb-2"></i>
-                    <h6 class="mb-0">Withdraw</h6>
-                </div>
-            </a>
-        <?php else: ?>
-            <div class="card text-center p-3 shadow-sm h-100 opacity-75" onclick="alert('Upgrade to Level 2 to access this!')" style="cursor:not-allowed;">
-                <i class="fas fa-lock fa-2x text-muted mb-2"></i>
-                <h6 class="mb-0 text-muted">Withdraw</h6>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
+</section>
 
-<div class="mt-4">
-    <h5>Latest Notifications</h5>
-    <div class="list-group">
-        <?php
-        $stmt = $pdo->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 3");
-        $stmt->execute([$_SESSION['user_id']]);
-        $notifications = $stmt->fetchAll();
-        if (empty($notifications)):
-        ?>
-            <div class="list-group-item text-muted text-center">No new notifications</div>
-        <?php else:
-            foreach ($notifications as $notif):
-        ?>
-            <div class="list-group-item">
-                <div class="d-flex w-100 justify-content-between">
-                    <small class="text-muted"><?php echo date('d M, h:i A', strtotime($notif['created_at'])); ?></small>
-                </div>
-                <p class="mb-1"><?php echo htmlspecialchars($notif['message']); ?></p>
-            </div>
-        <?php
-            endforeach;
-        endif;
-        ?>
-    </div>
-</div>
-
-<?php
-require_once 'includes/bottom_menu.php';
-require_once 'includes/footer.php';
-?>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
